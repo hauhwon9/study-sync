@@ -1,0 +1,4 @@
+data/app-state.json
+node_modules
+.DS_Store
+public/assets/preview-*.png

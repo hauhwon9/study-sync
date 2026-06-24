@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: study-sync
+    runtime: node
+    plan: free
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    healthCheckPath: /api/state
+    autoDeploy: true
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: XIAOBAI_PASSWORD
+        sync: false
+      - key: JIMAO_PASSWORD
+        sync: false

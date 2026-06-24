@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>小白和鸡毛学习窝</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <div class="background-mascot xiaobai-bg" aria-hidden="true"></div>
+      <div class="background-mascot xiaojimao-bg" aria-hidden="true"></div>
+      <section class="guide-view" id="guideView">
+        <div class="guide-copy">
+          <p class="eyebrow">Paw Study</p>
+          <h1>小白和鸡毛学习窝</h1>
+        </div>
+        <div class="guide-grid">
+          <button class="guide-card" data-enter-user="xiaobai" type="button">
+            <img src="/assets/xiaobai.png" alt="" />
+            <span>我是小白！</span>
+          </button>
+          <button class="guide-card" data-enter-user="xiaojimao" type="button">
+            <img src="/assets/xiaojimao.png" alt="" />
+            <span>我是鸡毛！</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="topbar app-view" id="appTopbar" hidden>
+        <div class="title-block">
+          <p class="eyebrow">Paw Study</p>
+          <h1 id="pageTitle">小白和鸡毛学习窝</h1>
+        </div>
+        <button class="mascot-card" id="profileJump" type="button">
+          <img id="activeMascot" src="/assets/xiaobai.png" alt="" />
+        </button>
+        <div class="identity-switch" role="group" aria-label="选择当前用户">
+          <button class="identity-btn" data-nav="guide" type="button">导览</button>
+          <button class="identity-btn active" data-nav="own" type="button">我的小窝</button>
+        </div>
+      </section>
+
+      <section class="dashboard app-view" id="dashboard" hidden></section>
+      <section class="today-panel app-view" id="todayPanel" hidden></section>
+
+      <section class="workspace app-view" id="workspace" hidden>
+        <aside class="side-panel">
+          <div class="panel-heading">
+            <h2>爪爪 DDL</h2>
+          </div>
+          <div class="calendar-screen" id="ddlCalendar"></div>
+
+          <div class="panel-heading compact">
+            <h2>公开悄悄话</h2>
+          </div>
+          <form id="messageForm" class="message-box">
+            <textarea name="body" rows="3" placeholder="给对方留一句鼓劲的小纸条"></textarea>
+            <button class="icon-btn send" type="submit" title="发送">↗</button>
+          </form>
+          <div class="feed" id="messageFeed"></div>
+
+          <div class="panel-heading compact">
+            <h2>完成时间线</h2>
+          </div>
+          <div class="timeline-feed" id="timelineFeed"></div>
+        </aside>
+
+        <section class="main-panel">
+          <section class="profile-panel" id="profilePanel" hidden>
+            <div class="profile-head">
+              <img id="profileMascot" src="/assets/xiaobai.png" alt="" />
+              <div>
+                <h2 id="profileTitle">小白主页</h2>
+                <p id="profileSummary">学习概览</p>
+              </div>
+            </div>
+            <div class="visual-grid" id="profileCharts"></div>
+            <form id="profileMessageForm" class="message-box profile-message">
+              <textarea name="body" rows="3" placeholder="在主页留言墙留一句话"></textarea>
+              <button class="icon-btn send" type="submit" title="发送">↗</button>
+            </form>
+            <div class="feed profile-feed" id="profileFeed"></div>
+          </section>
+
+          <div class="panel-heading task-heading">
+            <div>
+              <h2 id="planTitle">我的学习计划</h2>
+              <p id="syncStatus">正在连接实时同步</p>
+            </div>
+            <button class="primary-btn" id="openTaskDialog" type="button">新增任务</button>
+          </div>
+          <div class="task-list" id="taskList"></div>
+          <div class="panel-heading task-heading other-heading">
+            <div>
+              <h2 id="partnerTitle">对方动态</h2>
+              <p>只读查看对方任务完成情况</p>
+            </div>
+          </div>
+          <div class="task-list partner-list" id="partnerTaskList"></div>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="taskDialog">
+      <form id="taskForm" class="dialog-card">
+        <div class="panel-heading">
+          <h2 id="dialogTitle">新增任务</h2>
+          <button class="icon-btn" id="closeTaskDialog" type="button" title="关闭">×</button>
+        </div>
+        <input type="hidden" name="taskId" />
+        <label>
+          归属角色
+          <select name="ownerId">
+            <option value="xiaobai">小白</option>
+            <option value="xiaojimao">鸡毛</option>
+          </select>
+        </label>
+        <label>
+          任务模板
+          <select name="templateKey" id="taskTemplateSelect">
+            <option value="blank">自定义任务</option>
+            <option value="vocab">背单词模板</option>
+            <option value="paper">论文阅读模板</option>
+            <option value="exam">考试复习模板</option>
+          </select>
+        </label>
+        <label>
+          任务名称
+          <input name="title" required maxlength="80" placeholder="例如：论文阅读 3 篇" />
+        </label>
+        <div class="form-grid">
+          <label>
+            科目
+            <input name="subject" maxlength="32" placeholder="学习" />
+          </label>
+          <label>
+            截止日期
+            <input name="dueDate" type="date" />
+          </label>
+          <label>
+            步数
+            <input name="totalSteps" type="number" min="1" max="99" value="5" />
+          </label>
+        </div>
+        <label>
+          步骤细节
+          <textarea name="stepsText" rows="5" maxlength="1200" placeholder="每行一个步骤，例如：&#10;收集资料&#10;完成第一遍阅读&#10;整理错题"></textarea>
+        </label>
+        <label>
+          备注
+          <textarea name="notes" rows="3" maxlength="240" placeholder="拆分方式、资料链接、注意事项"></textarea>
+        </label>
+        <div class="dialog-actions">
+          <button class="ghost-btn" id="cancelTaskDialog" type="button">取消</button>
+          <button class="primary-btn" value="default" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="loginDialog">
+      <form id="loginForm" class="dialog-card login-card">
+        <div class="panel-heading">
+          <div>
+            <h2 id="loginTitle">进入小窝</h2>
+            <p id="loginHint" class="detail-meta"></p>
+          </div>
+          <button class="icon-btn" id="cancelLoginDialog" type="button" title="关闭">×</button>
+        </div>
+        <label>
+          入口口令
+          <input name="password" type="password" autocomplete="current-password" placeholder="输入自己的口令" />
+        </label>
+        <p class="login-error" id="loginError"></p>
+        <div class="dialog-actions">
+          <button class="ghost-btn" id="skipLoginButton" type="button">本地直接进入</button>
+          <button class="primary-btn" type="submit">进入</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detailDialog">
+      <form id="detailForm" class="dialog-card detail-card">
+        <div class="panel-heading">
+          <div>
+            <h2 id="detailTitle">任务详情</h2>
+            <p id="detailMeta" class="detail-meta"></p>
+          </div>
+          <button class="icon-btn" id="closeDetailDialog" type="button" title="关闭">×</button>
+        </div>
+        <div id="detailBody"></div>
+      </form>
+    </dialog>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
