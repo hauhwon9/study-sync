@@ -50,7 +50,7 @@
           </button>
           <button class="left-nav-link" data-left-nav="calendar" type="button">
             <span class="nav-icon">□</span>
-            <span class="nav-text">DDL 月历</span>
+            <span class="nav-text">爪爪 DDL</span>
           </button>
           <button class="left-nav-link" data-left-nav="messages" type="button">
             <span class="nav-icon">✎</span>
@@ -80,19 +80,25 @@
       <section class="dashboard app-view" id="dashboard" hidden></section>
       <section class="today-panel app-view" id="todayPanel" hidden></section>
 
-      <section class="workspace app-view" id="workspace" hidden>
-        <aside class="side-panel">
-          <div class="panel-heading">
-            <h2>爪爪 DDL</h2>
+      <section class="calendar-page app-view" id="calendarPage" hidden>
+        <div class="calendar-page-head">
+          <div>
+            <p class="eyebrow">Paw DDL</p>
+            <h2 id="calendarPageTitle">我的爪爪 DDL</h2>
           </div>
-          <div class="calendar-screen" id="ddlCalendar"></div>
+          <button class="primary-btn" id="calendarAddTask" type="button"><span aria-hidden="true">＋</span>新增任务</button>
+        </div>
+        <div class="calendar-screen calendar-screen-large" id="ddlCalendar"></div>
+      </section>
 
+      <section class="workspace app-view" id="workspace" hidden>
+        <aside class="side-panel interaction-wall">
           <div class="panel-heading compact">
             <h2>公开悄悄话</h2>
           </div>
           <form id="messageForm" class="message-box">
             <textarea name="body" rows="3" placeholder="给对方留一句鼓劲的小纸条"></textarea>
-            <button class="icon-btn send" type="submit" title="发送">↗</button>
+            <button class="icon-btn send" type="submit" title="发送"><span aria-hidden="true">↗</span></button>
           </form>
           <div class="feed" id="messageFeed"></div>
 
@@ -114,7 +120,7 @@
             <div class="visual-grid" id="profileCharts"></div>
             <form id="profileMessageForm" class="message-box profile-message">
               <textarea name="body" rows="3" placeholder="在主页留言墙留一句话"></textarea>
-              <button class="icon-btn send" type="submit" title="发送">↗</button>
+              <button class="icon-btn send" type="submit" title="发送"><span aria-hidden="true">↗</span></button>
             </form>
             <div class="feed profile-feed" id="profileFeed"></div>
           </section>
@@ -124,7 +130,7 @@
               <h2 id="planTitle">我的学习计划</h2>
               <p id="syncStatus">正在连接实时同步</p>
             </div>
-            <button class="primary-btn" id="openTaskDialog" type="button">新增任务</button>
+            <button class="primary-btn" id="openTaskDialog" type="button"><span aria-hidden="true">＋</span>新增任务</button>
           </div>
           <div class="task-list" id="taskList"></div>
           <div class="panel-heading task-heading other-heading">
@@ -137,12 +143,14 @@
         </section>
       </section>
     </main>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <div class="hover-card" id="hoverCard" hidden></div>
 
     <dialog id="taskDialog">
       <form id="taskForm" class="dialog-card">
         <div class="panel-heading">
           <h2 id="dialogTitle">新增任务</h2>
-          <button class="icon-btn" id="closeTaskDialog" type="button" title="关闭">×</button>
+          <button class="icon-btn" id="closeTaskDialog" type="button" title="关闭"><span aria-hidden="true">×</span></button>
         </div>
         <input type="hidden" name="taskId" />
         <label>
@@ -188,8 +196,8 @@
           <textarea name="notes" rows="3" maxlength="240" placeholder="拆分方式、资料链接、注意事项"></textarea>
         </label>
         <div class="dialog-actions">
-          <button class="ghost-btn" id="cancelTaskDialog" type="button">取消</button>
-          <button class="primary-btn" value="default" type="submit">保存</button>
+          <button class="ghost-btn" id="cancelTaskDialog" type="button"><span aria-hidden="true">←</span>取消</button>
+          <button class="primary-btn" value="default" type="submit"><span aria-hidden="true">✓</span>保存</button>
         </div>
       </form>
     </dialog>
@@ -201,7 +209,7 @@
             <h2 id="loginTitle">进入小窝</h2>
             <p id="loginHint" class="detail-meta"></p>
           </div>
-          <button class="icon-btn" id="cancelLoginDialog" type="button" title="关闭">×</button>
+          <button class="icon-btn" id="cancelLoginDialog" type="button" title="关闭"><span aria-hidden="true">×</span></button>
         </div>
         <label>
           入口口令
@@ -209,8 +217,8 @@
         </label>
         <p class="login-error" id="loginError"></p>
         <div class="dialog-actions">
-          <button class="ghost-btn" id="skipLoginButton" type="button">本地直接进入</button>
-          <button class="primary-btn" type="submit">进入</button>
+          <button class="ghost-btn" id="skipLoginButton" type="button"><span aria-hidden="true">⌂</span>本地直接进入</button>
+          <button class="primary-btn" type="submit"><span aria-hidden="true">→</span>进入</button>
         </div>
       </form>
     </dialog>
@@ -222,7 +230,7 @@
             <h2 id="detailTitle">任务详情</h2>
             <p id="detailMeta" class="detail-meta"></p>
           </div>
-          <button class="icon-btn" id="closeDetailDialog" type="button" title="关闭">×</button>
+          <button class="icon-btn" id="closeDetailDialog" type="button" title="关闭"><span aria-hidden="true">×</span></button>
         </div>
         <div id="detailBody"></div>
       </form>

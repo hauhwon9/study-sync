@@ -13,6 +13,9 @@ const guideView = document.querySelector("#guideView");
 const appViews = document.querySelectorAll(".app-view");
 const dashboard = document.querySelector("#dashboard");
 const todayPanel = document.querySelector("#todayPanel");
+const calendarPage = document.querySelector("#calendarPage");
+const calendarPageTitle = document.querySelector("#calendarPageTitle");
+const workspace = document.querySelector("#workspace");
 const taskList = document.querySelector("#taskList");
 const partnerTaskList = document.querySelector("#partnerTaskList");
 const taskNav = document.querySelector("#taskNav");
@@ -38,6 +41,7 @@ const detailTitle = document.querySelector("#detailTitle");
 const detailMeta = document.querySelector("#detailMeta");
 const dialogTitle = document.querySelector("#dialogTitle");
 const openTaskDialog = document.querySelector("#openTaskDialog");
+const calendarAddTask = document.querySelector("#calendarAddTask");
 const activeMascot = document.querySelector("#activeMascot");
 const profileJump = document.querySelector("#profileJump");
 const profilePanel = document.querySelector("#profilePanel");
@@ -57,6 +61,8 @@ const loginHint = document.querySelector("#loginHint");
 const loginError = document.querySelector("#loginError");
 const cancelLoginDialog = document.querySelector("#cancelLoginDialog");
 const skipLoginButton = document.querySelector("#skipLoginButton");
+const toast = document.querySelector("#toast");
+const hoverCard = document.querySelector("#hoverCard");
 
 const formatter = new Intl.DateTimeFormat("zh-CN", {
   month: "2-digit",
@@ -115,6 +121,7 @@ async function postAction(type, payload = {}) {
   if (!response.ok) throw new Error("操作失败");
   stateRef.data = await response.json();
   render();
+  showToast(feedbackFor(type));
 }
 
 async function loadState() {
@@ -123,6 +130,7 @@ async function loadState() {
   if (currentUserId && !stateRef.data.users.some(user => user.id === currentUserId)) {
     currentUserId = null;
   }
+  applyRouteFromHash(false);
   render();
 }
 
@@ -197,6 +205,82 @@ function mascotFor(userId) {
   return userId === "xiaojimao" ? "/assets/xiaojimao.png" : "/assets/xiaobai.png";
 }
 
+function iconForTimeline(type) {
+  if (type.startsWith("message:")) return "✎";
+  if (type === "task:complete") return "✓";
+  if (type === "task:create") return "＋";
+  if (type === "task:delete") return "×";
+  if (type === "task:archive") return "⌄";
+  if (type === "task:restore") return "↺";
+  if (type.startsWith("step:")) return "☑";
+  if (type === "progress:set") return "↗";
+  return "•";
+}
+
+function feedbackFor(type) {
+  const labels = {
+    "task:create": "任务已加入学习窝",
+    "task:update": "任务已更新",
+    "task:delete": "任务已删除",
+    "task:archive": "任务已归档",
+    "task:restore": "任务已恢复",
+    "task:complete": "任务完成啦",
+    "progress:set": "进度已同步",
+    "step:toggle": "步骤已更新",
+    "step:reorder": "步骤顺序已保存",
+    "message:create": "小纸条已送达"
+  };
+  return labels[type] || "已同步";
+}
+
+let toastTimer = null;
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.hidden = false;
+  toast.classList.remove("show");
+  window.requestAnimationFrame(() => toast.classList.add("show"));
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => {
+    toast.classList.remove("show");
+    window.setTimeout(() => {
+      toast.hidden = true;
+    }, 180);
+  }, 1700);
+}
+
+function moveHoverCard(event) {
+  if (!hoverCard || hoverCard.hidden) return;
+  const margin = 16;
+  const rect = hoverCard.getBoundingClientRect();
+  const left = Math.min(window.innerWidth - rect.width - margin, event.clientX + 18);
+  const top = Math.min(window.innerHeight - rect.height - margin, event.clientY + 18);
+  hoverCard.style.left = `${Math.max(margin, left)}px`;
+  hoverCard.style.top = `${Math.max(margin, top)}px`;
+}
+
+function showHoverCard(target, event) {
+  if (!hoverCard || !target) return;
+  hoverCard.innerHTML = `
+    <div class="hover-card-head">
+      <span style="--owner:${target.dataset.hoverColor || "var(--accent)"}"></span>
+      <strong>${escapeHtml(target.dataset.hoverTitle || "任务详情")}</strong>
+    </div>
+    <p>${escapeHtml(target.dataset.hoverMeta || "")}</p>
+    <small>${escapeHtml(target.dataset.hoverDue || "")}</small>
+    <em>${escapeHtml(target.dataset.hoverNotes || "")}</em>
+  `;
+  hoverCard.hidden = false;
+  hoverCard.classList.add("show");
+  moveHoverCard(event);
+}
+
+function hideHoverCard() {
+  if (!hoverCard) return;
+  hoverCard.classList.remove("show");
+  hoverCard.hidden = true;
+}
+
 function tokenFor(userId) {
   return localStorage.getItem(`study-sync-token-${userId}`) || "";
 }
@@ -236,12 +320,14 @@ function enterUser(userId) {
   viewUserId = userId;
   mode = "own";
   localStorage.setItem("study-sync-user", userId);
+  setRoute("own");
   render();
 }
 
 function showGuide() {
   mode = "guide";
   viewUserId = null;
+  setRoute("guide");
   render();
 }
 
@@ -252,6 +338,7 @@ function showOwn() {
   }
   mode = "own";
   viewUserId = currentUserId;
+  setRoute("own");
   render();
 }
 
@@ -262,7 +349,48 @@ function showProfile(userId) {
   }
   mode = userId === currentUserId ? "own" : "profile";
   viewUserId = userId;
+  setRoute(userId === currentUserId ? "own" : "partner");
   render();
+}
+
+function showCalendar() {
+  if (!currentUserId) {
+    showGuide();
+    return;
+  }
+  mode = "calendar";
+  viewUserId = currentUserId;
+  setRoute("calendar");
+  render();
+}
+
+function setRoute(route) {
+  const nextHash = `#${route}`;
+  if (window.location.hash !== nextHash) {
+    window.history.pushState(null, "", nextHash);
+  }
+}
+
+function applyRouteFromHash(shouldRender = true) {
+  if (!stateRef.data) return;
+  const route = window.location.hash.replace("#", "") || "own";
+  if (!currentUserId) {
+    mode = "guide";
+    viewUserId = null;
+  } else if (route === "calendar") {
+    mode = "calendar";
+    viewUserId = currentUserId;
+  } else if (route === "partner") {
+    mode = "profile";
+    viewUserId = otherUser(currentUserId).id;
+  } else if (route === "guide") {
+    mode = "guide";
+    viewUserId = null;
+  } else {
+    mode = "own";
+    viewUserId = currentUserId;
+  }
+  if (shouldRender) render();
 }
 
 function renderShell() {
@@ -271,6 +399,12 @@ function renderShell() {
   appViews.forEach(view => {
     view.hidden = inGuide;
   });
+  if (!inGuide) {
+    dashboard.hidden = mode === "calendar";
+    todayPanel.hidden = mode === "calendar";
+    workspace.hidden = mode === "calendar";
+    calendarPage.hidden = mode !== "calendar";
+  }
 
   const themeUserId = viewUserId || currentUserId || "xiaobai";
   document.body.dataset.theme = themeUserId;
@@ -284,11 +418,11 @@ function renderNavigation() {
   const viewed = userById(viewUserId);
   const target = mode === "profile" ? userById(currentUserId) : otherUser(currentUserId);
 
-  pageTitle.textContent = mode === "profile" ? `${viewed.name}主页` : `${viewed.name}的学习小窝`;
+  pageTitle.textContent = mode === "calendar" ? `${viewed.name}的爪爪 DDL` : mode === "profile" ? `${viewed.name}主页` : `${viewed.name}的学习小窝`;
   activeMascot.src = mascotFor(target.id);
 
   document.querySelectorAll("[data-nav]").forEach(button => {
-    button.classList.toggle("active", button.dataset.nav === (mode === "profile" ? "profile" : "own"));
+    button.classList.toggle("active", button.dataset.nav === "own" && mode !== "guide");
   });
 }
 
@@ -306,7 +440,8 @@ function renderLeftNav() {
     const key = button.dataset.leftNav;
     const active =
       (key === "own" && mode === "own") ||
-      (key === "partner" && mode === "profile" && viewed.id !== currentUserId);
+      (key === "partner" && mode === "profile" && viewed.id !== currentUserId) ||
+      (key === "calendar" && mode === "calendar");
     button.classList.toggle("active", active);
   });
 }
@@ -327,7 +462,7 @@ function renderDashboard() {
       <strong>${remainingFor(viewed.id)}</strong>
     </article>
     <article class="metric">
-      <span>未完成 DDL</span>
+      <span>待截止任务</span>
       <strong>${unfinishedDdl}</strong>
     </article>
     <article class="metric">
@@ -349,10 +484,6 @@ function renderTodayPanel() {
   const viewed = userById(viewUserId);
   const tasks = tasksFor(viewed.id);
   const todayTasks = tasks.filter(task => daysUntil(task.dueDate) === 0 && taskCompletion(task) < 100);
-  const urgentTasks = tasks
-    .filter(task => task.dueDate && taskCompletion(task) < 100 && daysUntil(task.dueDate) >= 0)
-    .sort((a, b) => daysUntil(a.dueDate) - daysUntil(b.dueDate))
-    .slice(0, 3);
   const completedSteps = tasks.reduce((sum, task) => sum + taskValue(task), 0);
   const totalSteps = tasks.reduce((sum, task) => sum + task.totalSteps, 0);
   const weekPercent = totalSteps ? Math.round((completedSteps / totalSteps) * 100) : 0;
@@ -362,22 +493,10 @@ function renderTodayPanel() {
       <span>今天要盯住</span>
       <strong>${todayTasks.length ? todayTasks.map(task => escapeHtml(task.title)).join(" · ") : "今天没有卡点"}</strong>
     </article>
-    <article class="today-card">
-      <span>最近 DDL</span>
-      <div class="mini-list">
-        ${
-          urgentTasks.length
-            ? urgentTasks
-                .map(task => `<button type="button" data-task-id="${task.id}" class="mini-ddl">${escapeHtml(task.title)} · ${dueLabel(task)}</button>`)
-                .join("")
-            : `<p>暂时没有临近 DDL</p>`
-        }
-      </div>
-    </article>
     <article class="today-card stat-card">
       <span>本周推进</span>
       <div class="mini-bars">
-        <div class="bar"><span style="width:${weekPercent}%;background:${viewed.color}"></span></div>
+        <div class="bar"><span style="width:${weekPercent}%;background-color:${viewed.color}"></span></div>
         <strong>${completedSteps}/${totalSteps}</strong>
       </div>
     </article>
@@ -394,9 +513,12 @@ function renderMessages() {
     .map(item => {
       const user = userById(item.userId);
       return `
-        <article class="feed-item">
-          <span class="time">${escapeHtml(user.name)} · ${formatTime(item.createdAt)}</span>
-          <p>${escapeHtml(item.body)}</p>
+        <article class="feed-item" style="--owner:${user.color}">
+          <span class="feed-avatar" style="--owner:${user.color}">${escapeHtml(user.name.slice(0, 1))}</span>
+          <div>
+            <span class="time">${escapeHtml(user.name)} · ${formatTime(item.createdAt)}</span>
+            <p>${escapeHtml(item.body)}</p>
+          </div>
         </article>
       `;
     })
@@ -439,7 +561,7 @@ function renderTimeline() {
           const label = timelineLabel(item);
           return `
             <article class="timeline-item">
-              <span class="timeline-dot" style="--dot:${user.color}"></span>
+              <span class="timeline-dot" style="--dot:${user.color}">${escapeHtml(iconForTimeline(item.type))}</span>
               <div>
                 <span class="time">${escapeHtml(user.name)} · ${formatTime(item.createdAt)}</span>
                 <p><strong>${escapeHtml(label.action)}</strong>${label.taskTitle ? ` · ${escapeHtml(label.taskTitle)}` : ""}</p>
@@ -463,20 +585,24 @@ function renderProfileMessages(profileUserId) {
         .map(item => {
           const user = userById(item.userId);
           return `
-            <article class="feed-item">
-              <span class="time">${escapeHtml(user.name)} · ${formatTime(item.createdAt)}</span>
-              <p>${escapeHtml(item.body)}</p>
+            <article class="feed-item" style="--owner:${user.color}">
+              <span class="feed-avatar" style="--owner:${user.color}">${escapeHtml(user.name.slice(0, 1))}</span>
+              <div>
+                <span class="time">${escapeHtml(user.name)} · ${formatTime(item.createdAt)}</span>
+                <p>${escapeHtml(item.body)}</p>
+              </div>
             </article>
           `;
         })
         .join("")
-    : `<article class="feed-item"><p>这里还没有主页留言。</p></article>`;
+    : `<article class="feed-item empty"><p>这里还没有主页留言。</p></article>`;
 }
 
 function renderCalendar() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const viewed = userById(viewUserId);
+  calendarPageTitle.textContent = `${viewed.name}的爪爪 DDL`;
   const first = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth(), 1);
   const start = new Date(first);
   start.setDate(first.getDate() - first.getDay());
@@ -485,7 +611,13 @@ function renderCalendar() {
     date.setDate(start.getDate() + index);
     return date;
   });
-  const tasks = tasksFor(viewed.id);
+  const tasks = stateRef.data.tasks
+    .filter(task => task.dueDate)
+    .sort((a, b) => {
+      const byDate = String(a.dueDate).localeCompare(String(b.dueDate));
+      if (byDate) return byDate;
+      return userById(a.ownerId).name.localeCompare(userById(b.ownerId).name, "zh-CN");
+    });
   const todayKey = dateKey(today);
   if (!selectedCalendarDate) selectedCalendarDate = todayKey;
   const selectedDate = new Date(`${selectedCalendarDate}T00:00:00`);
@@ -502,6 +634,11 @@ function renderCalendar() {
         <button class="month-nav" data-month-nav="next" type="button" title="下个月">›</button>
         <button class="month-today" data-month-nav="today" type="button">今天</button>
       </div>
+      <div class="owner-legend">
+        ${stateRef.data.users
+          .map(user => `<span style="--owner:${user.color}"><i></i>${escapeHtml(user.name)}的 DDL</span>`)
+          .join("")}
+      </div>
       <div class="weekday-row">
         ${["日", "一", "二", "三", "四", "五", "六"].map(day => `<span>${day}</span>`).join("")}
       </div>
@@ -517,12 +654,20 @@ function renderCalendar() {
                   <strong>${date.getDate()}</strong>
                   ${items.length ? `<span>${items.length}</span>` : ""}
                 </div>
-                <div class="month-dots">
+                <div class="month-cell-tasks">
                   ${items
-                    .slice(0, 4)
-                    .map(task => `<span style="--owner:${viewed.color};--done:${taskCompletion(task)}%"></span>`)
+                    .slice(0, 3)
+                    .map(task => {
+                      const owner = userById(task.ownerId);
+                      return `
+                        <span class="month-cell-task" ${taskHoverAttrs(task)} style="--owner:${owner.color};--done:${taskCompletion(task)}%">
+                          <em>${escapeHtml(owner.name)}</em>
+                          <strong>${escapeHtml(task.title)}</strong>
+                        </span>
+                      `;
+                    })
                     .join("")}
-                  ${items.length > 4 ? `<em>+${items.length - 4}</em>` : ""}
+                  ${items.length > 3 ? `<b class="more-ddl">+${items.length - 3}</b>` : ""}
                 </div>
               </button>
             `;
@@ -545,13 +690,16 @@ function renderCalendar() {
             selectedTasks.length
               ? selectedTasks
                   .map(
-                    task => `
-                      <button class="month-task" data-task-id="${task.id}" type="button" style="--owner:${viewed.color};--done:${taskCompletion(task)}%">
+                    task => {
+                      const owner = userById(task.ownerId);
+                      return `
+                      <button class="month-task" data-task-id="${task.id}" ${taskHoverAttrs(task)} type="button" style="--owner:${owner.color};--done:${taskCompletion(task)}%">
                         <span></span>
-                        <strong>${escapeHtml(task.title)}</strong>
-                        <small>${taskCompletion(task)}% · ${taskValue(task)}/${task.totalSteps} 步</small>
+                        <strong>${escapeHtml(owner.name)} · ${escapeHtml(task.title)}</strong>
+                        <small>${taskCompletion(task)}% · ${taskValue(task)}/${task.totalSteps} 步 · ${escapeHtml(dueLabel(task))}</small>
                       </button>
-                    `
+                    `;
+                    }
                   )
                   .join("")
               : `<p class="empty-agenda">这天没有 DDL，可以安心推进手头任务。</p>`
@@ -571,6 +719,20 @@ function dueLabel(task) {
   if (days < 0) return `已过期 ${Math.abs(days)} 天`;
   if (days === 0) return "今天截止";
   return `还剩 ${days} 天`;
+}
+
+function taskHoverAttrs(task) {
+  const owner = userById(task.ownerId);
+  const meta = `${owner.name} · ${task.subject || "学习"} · ${taskCompletion(task)}% · ${taskValue(task)}/${task.totalSteps} 步`;
+  return [
+    `data-hover-card="task"`,
+    `data-hover-owner="${escapeHtml(owner.name)}"`,
+    `data-hover-color="${escapeHtml(owner.color)}"`,
+    `data-hover-title="${escapeHtml(task.title)}"`,
+    `data-hover-meta="${escapeHtml(meta)}"`,
+    `data-hover-due="${escapeHtml(task.dueDate ? dueLabel(task) : "无截止日期")}"`,
+    `data-hover-notes="${escapeHtml(task.notes || "点开可以查看步骤和留言。")}"`
+  ].join(" ");
 }
 
 function renderProfilePanel() {
@@ -597,7 +759,7 @@ function renderProfilePanel() {
     </div>
     <div class="chart-card">
       <strong>${tasks.filter(task => task.dueDate && taskCompletion(task) < 100).length}</strong>
-      <p>未完成 DDL</p>
+      <p>待截止任务</p>
     </div>
   `;
   renderProfileMessages(viewed.id);
@@ -638,14 +800,14 @@ function renderTaskCard(task, readonly) {
     .slice(0, 2);
 
   return `
-    <article class="task-card ${readonly ? "readonly" : ""} ${status === "archived" ? "archived" : ""}" data-task-id="${task.id}">
+    <article class="task-card ${readonly ? "readonly" : ""} ${status === "archived" ? "archived" : ""} ${status === "completed" ? "completed" : ""}" data-task-id="${task.id}" ${taskHoverAttrs(task)} style="--owner:${owner.color}">
       <button class="task-open" data-task-id="${task.id}" type="button" aria-label="查看任务详情"></button>
       <div class="task-title">
         <div>
           <strong>${escapeHtml(task.title)}</strong>
           <p>${escapeHtml(task.notes || "点开查看任务详情和步骤")}</p>
         </div>
-        ${readonly ? "" : `<button class="icon-btn edit-task" type="button" title="编辑任务">✎</button>`}
+        ${readonly ? "" : `<button class="icon-btn edit-task" type="button" title="编辑任务"><span aria-hidden="true">✎</span></button>`}
       </div>
       <div class="task-meta">
         <span class="chip">${escapeHtml(owner.name)}</span>
@@ -663,7 +825,7 @@ function renderTaskCard(task, readonly) {
               <span>完成度</span>
               <span>${percent}%</span>
             </div>
-            <div class="bar"><span style="width:${percent}%;background:${owner.color}"></span></div>
+            <div class="bar"><span style="width:${percent}%;background-color:${owner.color}"></span></div>
           </div>
           ${
             readonly
@@ -681,14 +843,14 @@ function renderTaskCard(task, readonly) {
           ? `<div class="feed">${taskMessages
               .map(message => {
                 const user = userById(message.userId);
-                return `<div class="feed-item"><span class="time">${escapeHtml(user.name)} · ${formatTime(message.createdAt)}</span><p>${escapeHtml(message.body)}</p></div>`;
+                return `<div class="feed-item" style="--owner:${user.color}"><span class="feed-avatar" style="--owner:${user.color}">${escapeHtml(user.name.slice(0, 1))}</span><div><span class="time">${escapeHtml(user.name)} · ${formatTime(message.createdAt)}</span><p>${escapeHtml(message.body)}</p></div></div>`;
               })
               .join("")}</div>`
           : ""
       }
       <form class="task-message">
         <input name="body" maxlength="500" placeholder="针对这个任务留言" />
-        <button class="ghost-btn" type="submit">发送</button>
+        <button class="ghost-btn" type="submit"><span aria-hidden="true">↗</span>发送</button>
       </form>
       ${
         readonly
@@ -696,11 +858,11 @@ function renderTaskCard(task, readonly) {
           : `<div class="task-actions">
               ${
                 status === "archived"
-                  ? `<button class="ghost-btn restore-task" type="button">恢复</button>`
-                  : `<button class="ghost-btn archive-task" type="button">归档</button>`
+                  ? `<button class="ghost-btn restore-task" type="button"><span aria-hidden="true">↺</span>恢复</button>`
+                  : `<button class="ghost-btn archive-task" type="button"><span aria-hidden="true">⌄</span>归档</button>`
               }
-              ${status === "completed" || status === "archived" ? "" : `<button class="ghost-btn complete-mine" type="button">全部完成</button>`}
-              <button class="ghost-btn delete-task" type="button">删除</button>
+              ${status === "completed" || status === "archived" ? "" : `<button class="ghost-btn complete-mine" type="button"><span aria-hidden="true">✓</span>全部完成</button>`}
+              <button class="ghost-btn delete-task" type="button"><span aria-hidden="true">×</span>删除</button>
             </div>`
       }
     </article>
@@ -765,7 +927,7 @@ function openTaskDetail(task) {
   detailMeta.textContent = `${owner.name} · ${task.subject || "学习"} · ${task.dueDate || "无截止日期"} · ${value}/${task.totalSteps} 步`;
   detailBody.innerHTML = `
     <div class="detail-progress">
-      <div class="bar"><span style="width:${percent}%;background:${owner.color}"></span></div>
+      <div class="bar"><span style="width:${percent}%;background-color:${owner.color}"></span></div>
       <strong>${percent}%</strong>
     </div>
     <p class="task-notes">${escapeHtml(task.notes || "还没有备注。")}</p>
@@ -791,14 +953,14 @@ function openTaskDetail(task) {
         .join("")}
     </div>
     <div class="detail-actions">
-      ${readonly ? "" : `<button class="ghost-btn detail-edit" type="button">编辑任务</button>`}
+      ${readonly ? "" : `<button class="ghost-btn detail-edit" type="button"><span aria-hidden="true">✎</span>编辑任务</button>`}
     </div>
     <h3 class="detail-section-title">任务留言</h3>
     <div class="feed detail-feed">
       ${messages
         .map(message => {
           const user = userById(message.userId);
-          return `<div class="feed-item"><span class="time">${escapeHtml(user.name)} · ${formatTime(message.createdAt)}</span><p>${escapeHtml(message.body)}</p></div>`;
+          return `<div class="feed-item" style="--owner:${user.color}"><span class="feed-avatar" style="--owner:${user.color}">${escapeHtml(user.name.slice(0, 1))}</span><div><span class="time">${escapeHtml(user.name)} · ${formatTime(message.createdAt)}</span><p>${escapeHtml(message.body)}</p></div></div>`;
         })
         .join("")}
     </div>
@@ -891,8 +1053,11 @@ document.addEventListener("click", event => {
     const target = leftNavButton.dataset.leftNav;
     if (target === "own") showOwn();
     if (target === "partner") showProfile(otherUser(currentUserId).id);
-    if (target === "calendar") document.querySelector(".side-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    if (target === "messages") timelineFeed?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (target === "calendar") showCalendar();
+    if (target === "messages") {
+      if (mode === "calendar") showOwn();
+      window.setTimeout(() => timelineFeed?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+    }
     return;
   }
 
@@ -906,6 +1071,11 @@ document.addEventListener("click", event => {
   if (event.target.closest("#profileJump")) {
     if (mode === "profile") showOwn();
     else showProfile(otherUser(currentUserId).id);
+    return;
+  }
+
+  if (event.target.closest("#calendarAddTask")) {
+    openDialog();
     return;
   }
 
@@ -990,6 +1160,34 @@ document.addEventListener("click", event => {
   }
 
   openTaskDetail(task);
+});
+
+document.addEventListener("mouseover", event => {
+  const target = event.target.closest("[data-hover-card]");
+  if (target) showHoverCard(target, event);
+});
+
+document.addEventListener("pointerover", event => {
+  const target = event.target.closest("[data-hover-card]");
+  if (target) showHoverCard(target, event);
+});
+
+document.addEventListener("mousemove", event => {
+  if (event.target.closest("[data-hover-card]")) moveHoverCard(event);
+});
+
+document.addEventListener("pointermove", event => {
+  if (event.target.closest("[data-hover-card]")) moveHoverCard(event);
+});
+
+document.addEventListener("mouseout", event => {
+  const target = event.target.closest("[data-hover-card]");
+  if (target && !target.contains(event.relatedTarget)) hideHoverCard();
+});
+
+document.addEventListener("pointerout", event => {
+  const target = event.target.closest("[data-hover-card]");
+  if (target && !target.contains(event.relatedTarget)) hideHoverCard();
 });
 
 taskList.addEventListener("submit", submitTaskMessage);
@@ -1131,6 +1329,8 @@ profileMessageForm.addEventListener("submit", event => {
   });
   profileMessageForm.body.value = "";
 });
+
+window.addEventListener("popstate", () => applyRouteFromHash());
 
 loadState();
 connectEvents();

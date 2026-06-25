@@ -96,6 +96,10 @@ button {
   cursor: pointer;
 }
 
+.app-view:not([hidden]):not(.left-app-nav):not(.left-nav-expand) {
+  animation: page-rise 260ms ease both;
+}
+
 .guide-view {
   min-height: calc(100vh - 56px);
   display: grid;
@@ -205,6 +209,7 @@ button {
 
 .topbar,
 .workspace,
+.calendar-page,
 .dashboard,
 .panel-heading,
 .task-heading,
@@ -345,7 +350,7 @@ h2 {
 
 .today-panel {
   display: grid;
-  grid-template-columns: 1.25fr 1fr 1fr;
+  grid-template-columns: 1.25fr 1fr;
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -454,6 +459,50 @@ h2 {
   gap: 16px;
 }
 
+.calendar-page {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  overflow: hidden;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.78)),
+    var(--accent-wash);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+}
+
+.calendar-page::before {
+  content: "";
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 180px;
+  height: 130px;
+  pointer-events: none;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.42)),
+    var(--study-sticker-main) center / cover no-repeat;
+  opacity: 0.09;
+  transform: rotate(-4deg);
+}
+
+.calendar-page-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.calendar-page-head h2 {
+  font-size: 24px;
+}
+
 .side-panel,
 .main-panel {
   position: relative;
@@ -469,6 +518,30 @@ h2 {
   top: 16px;
   width: 340px;
   padding: 18px;
+}
+
+.interaction-wall {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.72)),
+    var(--accent-wash);
+}
+
+.interaction-wall .panel-heading h2 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interaction-wall .panel-heading h2::before {
+  content: "✦";
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 13px;
 }
 
 .main-panel::after {
@@ -516,6 +589,10 @@ h2 {
   margin-top: 24px;
 }
 
+.side-panel > .panel-heading.compact:first-child {
+  margin-top: 0;
+}
+
 .task-heading p {
   margin-top: 4px;
   color: var(--muted);
@@ -540,7 +617,7 @@ h2 {
     var(--accent-wash);
   backdrop-filter: blur(14px);
   box-shadow: 0 24px 70px rgba(23, 32, 51, 0.18);
-  overflow: auto;
+  overflow: visible;
   transition:
     transform 220ms ease,
     opacity 180ms ease;
@@ -568,7 +645,7 @@ h2 {
 }
 
 .left-app-nav.collapsed {
-  transform: translateX(calc(-100% - 24px));
+  transform: translateX(-120%);
   opacity: 0;
   pointer-events: none;
 }
@@ -610,7 +687,8 @@ body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  padding-right: 40px;
 }
 
 .left-nav-brand {
@@ -649,7 +727,7 @@ body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
 
 .left-nav-collapse {
   position: absolute;
-  right: -30px;
+  right: 0;
   top: 4px;
   z-index: 2;
   width: 34px;
@@ -667,7 +745,7 @@ body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
 .left-nav-collapse:hover {
   border-color: var(--accent);
   color: var(--accent);
-  transform: translateX(2px);
+  transform: translateX(-2px);
 }
 
 .left-nav-section {
@@ -815,6 +893,10 @@ select:focus {
 .ghost-btn,
 .icon-btn {
   min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border-radius: 8px;
   font-weight: 850;
   transition:
@@ -831,6 +913,15 @@ select:focus {
   color: #fff;
   padding: 0 16px;
   box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.primary-btn span,
+.ghost-btn span,
+.icon-btn span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  line-height: 1;
 }
 
 .primary-btn:hover,
@@ -855,6 +946,8 @@ select:focus {
 }
 
 .calendar-screen {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 8px;
   max-height: 520px;
@@ -866,6 +959,12 @@ select:focus {
     linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.44)),
     radial-gradient(circle at 94% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 28%),
     var(--accent-wash);
+}
+
+.calendar-screen-large {
+  max-height: none;
+  min-height: 660px;
+  padding: 16px;
 }
 
 .month-calendar {
@@ -888,6 +987,35 @@ select:focus {
   text-align: center;
   color: var(--ink);
   font-size: 15px;
+}
+
+.owner-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.owner-legend span {
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--owner) 18%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--owner) 10%, #fff);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.owner-legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--owner);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--owner) 14%, transparent);
 }
 
 .month-nav,
@@ -956,6 +1084,60 @@ select:focus {
     box-shadow 150ms ease;
 }
 
+.calendar-screen-large .month-calendar {
+  gap: 14px;
+}
+
+.calendar-screen-large .month-header {
+  grid-template-columns: 42px 1fr 42px auto;
+  gap: 10px;
+  padding: 8px;
+}
+
+.calendar-screen-large .month-header strong {
+  font-size: 20px;
+}
+
+.calendar-screen-large .month-nav,
+.calendar-screen-large .month-today {
+  min-height: 40px;
+}
+
+.calendar-screen-large .weekday-row {
+  font-size: 12px;
+}
+
+.calendar-screen-large .month-grid {
+  gap: 8px;
+}
+
+.calendar-screen-large .month-cell {
+  min-height: 112px;
+  padding: 10px;
+}
+
+.calendar-screen-large .month-date strong {
+  font-size: 17px;
+}
+
+.calendar-screen-large .month-agenda {
+  padding: 14px;
+}
+
+.calendar-screen-large .month-agenda-head strong {
+  font-size: 17px;
+}
+
+.calendar-screen-large .month-task {
+  min-height: 48px;
+  grid-template-columns: 12px 1fr auto;
+  padding: 10px 12px;
+}
+
+.calendar-screen-large .month-task strong {
+  font-size: 14px;
+}
+
 .month-cell:hover {
   transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
@@ -973,6 +1155,7 @@ select:focus {
     linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.68)),
     var(--accent-soft);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+  animation: today-breathe 2.8s ease-in-out infinite;
 }
 
 .month-cell.has-ddl {
@@ -1016,20 +1199,47 @@ select:focus {
   font-weight: 850;
 }
 
-.month-dots {
-  min-height: 8px;
-  display: flex;
-  align-items: center;
-  gap: 3px;
+.month-cell-tasks {
+  display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
-.month-dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
+.month-cell-task {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 5px;
+  border-left: 3px solid var(--owner);
+  border-radius: 7px;
   background:
-    linear-gradient(90deg, var(--owner) var(--done), color-mix(in srgb, var(--owner) 18%, #fff) 0);
+    linear-gradient(90deg, color-mix(in srgb, var(--owner) 12%, #fff) var(--done), rgba(255, 255, 255, 0.76) 0);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--owner) 12%, transparent);
+}
+
+.month-cell-task em {
+  min-width: 28px;
+  color: var(--owner);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.month-cell-task strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.month-cell-tasks .more-ddl {
+  width: fit-content;
+  padding: 0 7px;
 }
 
 .month-dots em {
@@ -1262,11 +1472,32 @@ select:focus {
 
 .feed-item {
   position: relative;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: start;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--owner, var(--accent)) 14%, var(--line));
   border-radius: 8px;
-  background: var(--soft);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--owner, var(--accent)) 8%, #fff), rgba(255, 255, 255, 0.78)),
+    var(--soft);
   overflow: hidden;
+  animation: message-pop 260ms ease both;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.feed-item:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--owner, var(--accent)) 30%, var(--line));
+  box-shadow: 0 12px 24px rgba(23, 32, 51, 0.09);
+}
+
+.feed-item.empty {
+  grid-template-columns: 1fr;
 }
 
 .feed-item::after {
@@ -1284,6 +1515,19 @@ select:focus {
     radial-gradient(ellipse at 16px 16px, var(--accent) 0 8px, transparent 9px);
   opacity: 0.08;
   transform: rotate(15deg);
+}
+
+.feed-avatar {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--owner, var(--accent));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 950;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--owner, var(--accent)) 13%, transparent);
 }
 
 .feed-item strong,
@@ -1307,12 +1551,14 @@ select:focus {
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 18px 1fr;
-  gap: 9px;
-  padding: 10px;
+  grid-template-columns: 30px 1fr;
+  gap: 10px;
+  padding: 11px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.68);
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--dot, var(--accent)) 7%, #fff), rgba(255, 255, 255, 0.72));
+  animation: message-pop 260ms ease both;
   transition:
     transform 150ms ease,
     border-color 150ms ease,
@@ -1326,11 +1572,15 @@ select:focus {
 }
 
 .timeline-dot {
-  width: 10px;
-  height: 10px;
-  margin-top: 4px;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
   border-radius: 999px;
   background: var(--dot, var(--accent));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 950;
   box-shadow: 0 0 0 5px color-mix(in srgb, var(--dot, var(--accent)) 15%, transparent);
 }
 
@@ -1361,9 +1611,11 @@ select:focus {
   position: relative;
   overflow: hidden;
   padding: 16px;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--owner, var(--accent)) 14%, var(--line));
+  border-left: 5px solid var(--owner, var(--accent));
   border-radius: 8px;
-  background: #fff;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--owner, var(--accent)) 5%, #fff), #fff 54%);
   transition:
     transform 180ms ease,
     border-color 180ms ease,
@@ -1411,6 +1663,17 @@ select:focus {
   transform: translateY(-3px);
   border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
   box-shadow: 0 20px 42px rgba(23, 32, 51, 0.11);
+}
+
+.task-card.completed {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--green) 8%, #fff), #fff 58%);
+  border-color: color-mix(in srgb, var(--green) 24%, var(--line));
+  border-left-color: var(--green);
+}
+
+.task-card.completed::after {
+  opacity: 0.1;
 }
 
 .task-card:hover::after {
@@ -1626,7 +1889,11 @@ select:focus {
   display: block;
   height: 100%;
   border-radius: inherit;
-  transition: width 220ms ease;
+  background-image: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+  background-size: 42px 100%;
+  background-repeat: no-repeat;
+  animation: progress-glint 2.2s ease-in-out infinite;
+  transition: width 260ms ease;
 }
 
 .stepper {
@@ -1663,6 +1930,103 @@ select:focus {
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 90;
+  min-height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.78)),
+    var(--accent-wash);
+  color: var(--accent);
+  box-shadow: 0 18px 45px rgba(23, 32, 51, 0.14);
+  font-size: 13px;
+  font-weight: 950;
+  opacity: 0;
+  transform: translate(-50%, 16px) scale(0.98);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.hover-card {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 95;
+  width: min(280px, calc(100vw - 32px));
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: 8px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.84)),
+    var(--accent-wash);
+  box-shadow: 0 20px 48px rgba(23, 32, 51, 0.18);
+  opacity: 0;
+  transform: translateY(4px) scale(0.98);
+  transition:
+    opacity 130ms ease,
+    transform 130ms ease;
+}
+
+.hover-card.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.hover-card-head {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.hover-card-head span {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--owner, var(--accent));
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--owner, var(--accent)) 14%, transparent);
+}
+
+.hover-card-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hover-card p,
+.hover-card small,
+.hover-card em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.hover-card em {
+  color: var(--ink);
+  font-weight: 700;
 }
 
 .task-message {
@@ -1908,6 +2272,37 @@ dialog::backdrop {
   }
 }
 
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes message-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes progress-glint {
+  0%, 40% {
+    background-position: -48px 0;
+  }
+  100% {
+    background-position: calc(100% + 48px) 0;
+  }
+}
+
 @keyframes mascot-hop {
   0%, 100% {
     transform: translateX(-50%) translateY(0) scale(1);
@@ -1917,6 +2312,19 @@ dialog::backdrop {
   }
   65% {
     transform: translateX(-50%) translateY(2px) scale(0.99);
+  }
+}
+
+@keyframes today-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px color-mix(in srgb, var(--accent) 34%, transparent),
+      0 0 0 4px color-mix(in srgb, var(--accent) 10%, transparent);
   }
 }
 
@@ -1954,6 +2362,7 @@ dialog::backdrop {
 
   .topbar,
   .workspace,
+  .calendar-page,
   .dashboard,
   .today-panel {
     flex-direction: column;
@@ -2017,14 +2426,48 @@ dialog::backdrop {
   .topbar,
   .dashboard,
   .today-panel,
+  .calendar-page,
   .main-panel,
   .side-panel {
     border-radius: 8px;
   }
 
+  .calendar-page,
   .main-panel,
   .side-panel {
     padding: 12px;
+  }
+
+  .calendar-page-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .calendar-screen-large {
+    min-height: 0;
+    padding: 10px;
+  }
+
+  .calendar-screen-large .month-header {
+    grid-template-columns: 36px 1fr 36px;
+  }
+
+  .calendar-screen-large .month-today {
+    grid-column: 1 / -1;
+  }
+
+  .calendar-screen-large .month-cell {
+    min-height: 84px;
+    padding: 7px;
+  }
+
+  .month-cell-task {
+    grid-template-columns: 1fr;
+    gap: 1px;
+  }
+
+  .month-cell-task em {
+    min-width: 0;
   }
 
   .dashboard {
