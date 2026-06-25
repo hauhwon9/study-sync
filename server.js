@@ -8,7 +8,10 @@ const HOST = process.env.HOST || "0.0.0.0";
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data", "app-state.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const AUTH_SECRET = process.env.AUTH_SECRET || "local-study-sync-secret";
-const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+const SUPABASE_URL = (process.env.SUPABASE_URL || "")
+  .trim()
+  .replace(/\/rest\/v1\/?$/, "")
+  .replace(/\/$/, "");
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const SUPABASE_TABLE = process.env.SUPABASE_TABLE || "app_state";
 const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
@@ -556,7 +559,11 @@ function serveStatic(req, res) {
 
 const server = http.createServer(async (req, res) => {
   if (req.url === "/api/state" && req.method === "GET") {
-    sendJson(res, 200, await readState());
+    try {
+      sendJson(res, 200, await readState());
+    } catch (error) {
+      sendJson(res, 500, { error: error.message });
+    }
     return;
   }
 
@@ -603,7 +610,11 @@ const server = http.createServer(async (req, res) => {
       "Cache-Control": "no-store",
       Connection: "keep-alive"
     });
-    res.write(`event: state\ndata: ${JSON.stringify(await readState())}\n\n`);
+    try {
+      res.write(`event: state\ndata: ${JSON.stringify(await readState())}\n\n`);
+    } catch (error) {
+      res.write(`event: error\ndata: ${JSON.stringify({ error: error.message })}\n\n`);
+    }
     clients.add(res);
     req.on("close", () => clients.delete(res));
     return;
