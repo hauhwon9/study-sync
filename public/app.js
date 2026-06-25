@@ -6,7 +6,8 @@ let pendingLoginUserId = null;
 let calendarCursor = new Date();
 let selectedCalendarDate = dateKey(new Date());
 let taskFilter = "active";
-let taskDrawerOpen = window.matchMedia("(min-width: 861px)").matches;
+const savedLeftNav = localStorage.getItem("study-sync-left-nav");
+let leftNavCollapsed = savedLeftNav ? savedLeftNav === "collapsed" : window.matchMedia("(max-width: 860px)").matches;
 
 const guideView = document.querySelector("#guideView");
 const appViews = document.querySelectorAll(".app-view");
@@ -15,7 +16,10 @@ const todayPanel = document.querySelector("#todayPanel");
 const taskList = document.querySelector("#taskList");
 const partnerTaskList = document.querySelector("#partnerTaskList");
 const taskNav = document.querySelector("#taskNav");
-const taskDrawerToggle = document.querySelector("#taskDrawerToggle");
+const leftAppNav = document.querySelector("#leftAppNav");
+const leftNavCollapse = document.querySelector("#leftNavCollapse");
+const leftNavMascot = document.querySelector("#leftNavMascot");
+const leftNavName = document.querySelector("#leftNavName");
 const messageFeed = document.querySelector("#messageFeed");
 const timelineFeed = document.querySelector("#timelineFeed");
 const ddlCalendar = document.querySelector("#ddlCalendar");
@@ -270,6 +274,7 @@ function renderShell() {
   const themeUserId = viewUserId || currentUserId || "xiaobai";
   document.body.dataset.theme = themeUserId;
   document.body.dataset.view = inGuide ? "guide" : mode;
+  document.body.dataset.navCollapsed = leftNavCollapsed ? "true" : "false";
 }
 
 function renderNavigation() {
@@ -283,6 +288,24 @@ function renderNavigation() {
 
   document.querySelectorAll("[data-nav]").forEach(button => {
     button.classList.toggle("active", button.dataset.nav === (mode === "profile" ? "profile" : "own"));
+  });
+}
+
+function renderLeftNav() {
+  if (mode === "guide" || !currentUserId || !viewUserId) return;
+  const viewed = userById(viewUserId);
+  leftNavMascot.src = mascotFor(currentUserId);
+  leftNavName.textContent = `${userById(currentUserId).name}的小窝`;
+  leftAppNav.classList.toggle("collapsed", leftNavCollapsed);
+  leftNavCollapse.textContent = leftNavCollapsed ? "›" : "‹";
+  leftNavCollapse.title = leftNavCollapsed ? "展开导航" : "收起导航";
+
+  document.querySelectorAll("[data-left-nav]").forEach(button => {
+    const key = button.dataset.leftNav;
+    const active =
+      (key === "own" && mode === "own") ||
+      (key === "partner" && mode === "profile" && viewed.id !== currentUserId);
+    button.classList.toggle("active", active);
   });
 }
 
@@ -580,19 +603,13 @@ function renderProfilePanel() {
 
 function renderTaskNav(tasks, readonly) {
   const items = [
-    { key: "active", label: "进行中", count: tasks.filter(task => taskStatus(task) === "active").length },
+    { key: "all", label: "全部任务", count: tasks.length },
+    { key: "active", label: "进行中/未完成", count: tasks.filter(task => taskStatus(task) === "active").length },
     { key: "completed", label: "已完成", count: tasks.filter(task => taskStatus(task) === "completed").length },
     { key: "archived", label: "已归档", count: tasks.filter(task => taskStatus(task) === "archived").length }
   ];
 
   taskNav.innerHTML = `
-    <div class="task-drawer-head">
-      <div>
-        <strong>任务导航</strong>
-        <span>${escapeHtml(userById(viewUserId).name)}的小窝</span>
-      </div>
-      <button class="drawer-close" type="button" title="收起任务导航">×</button>
-    </div>
     <div class="task-nav-inner">
       ${items
         .map(
@@ -605,10 +622,8 @@ function renderTaskNav(tasks, readonly) {
         )
         .join("")}
     </div>
-    ${readonly ? `<p>${escapeHtml(userById(viewUserId).name)}的任务概览</p>` : `<p>把完成任务归档后，当前列表会更清爽。</p>`}
+    ${readonly ? `<p>${escapeHtml(userById(viewUserId).name)}的任务概览</p>` : `<p>完成后可以归档，当前任务会更清爽。</p>`}
   `;
-  taskNav.classList.toggle("open", taskDrawerOpen);
-  taskDrawerToggle.classList.toggle("open", taskDrawerOpen);
 }
 
 function renderTaskCard(task, readonly) {
@@ -694,7 +709,7 @@ function renderTasks() {
   const viewed = userById(viewUserId);
   const readonly = viewUserId !== currentUserId;
   const tasks = tasksFor(viewed.id);
-  const visibleTasks = tasks.filter(task => taskStatus(task) === taskFilter);
+  const visibleTasks = taskFilter === "all" ? tasks : tasks.filter(task => taskStatus(task) === taskFilter);
 
   planTitle.textContent = readonly ? `${viewed.name}的计划` : `${viewed.name}的今日小窝`;
   partnerTitle.textContent = readonly ? "主页留言" : "任务留言";
@@ -704,7 +719,7 @@ function renderTasks() {
 
   taskList.innerHTML = visibleTasks.length
     ? visibleTasks.map(task => renderTaskCard(task, readonly)).join("")
-    : `<article class="task-card empty-task"><p class="task-notes">${escapeHtml(viewed.name)}这里暂时没有${taskFilter === "active" ? "进行中的" : taskFilter === "completed" ? "已完成的" : "已归档的"}任务。</p></article>`;
+    : `<article class="task-card empty-task"><p class="task-notes">${escapeHtml(viewed.name)}这里暂时没有${taskFilter === "all" ? "" : taskFilter === "active" ? "进行中/未完成的" : taskFilter === "completed" ? "已完成的" : "已归档的"}任务。</p></article>`;
 }
 
 function render() {
@@ -712,6 +727,7 @@ function render() {
   renderShell();
   if (mode === "guide" || !currentUserId || !viewUserId) return;
   renderNavigation();
+  renderLeftNav();
   renderDashboard();
   renderTodayPanel();
   renderCalendar();
@@ -860,17 +876,21 @@ document.addEventListener("click", event => {
     return;
   }
 
-  if (event.target.closest("#taskDrawerToggle")) {
-    taskDrawerOpen = !taskDrawerOpen;
-    taskNav.classList.toggle("open", taskDrawerOpen);
-    taskDrawerToggle.classList.toggle("open", taskDrawerOpen);
+  if (event.target.closest("#leftNavCollapse")) {
+    leftNavCollapsed = !leftNavCollapsed;
+    localStorage.setItem("study-sync-left-nav", leftNavCollapsed ? "collapsed" : "expanded");
+    renderShell();
+    renderLeftNav();
     return;
   }
 
-  if (event.target.closest(".drawer-close")) {
-    taskDrawerOpen = false;
-    taskNav.classList.remove("open");
-    taskDrawerToggle.classList.remove("open");
+  const leftNavButton = event.target.closest("[data-left-nav]");
+  if (leftNavButton) {
+    const target = leftNavButton.dataset.leftNav;
+    if (target === "own") showOwn();
+    if (target === "partner") showProfile(otherUser(currentUserId).id);
+    if (target === "calendar") document.querySelector(".side-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (target === "messages") timelineFeed?.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 

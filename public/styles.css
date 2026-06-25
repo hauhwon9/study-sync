@@ -497,47 +497,17 @@ h2 {
   font-size: 13px;
 }
 
-.task-drawer-toggle {
+.left-app-nav {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 60;
-  min-height: 44px;
-  padding: 0 16px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 14px 32px rgba(23, 32, 51, 0.16);
-  font-weight: 950;
-  transition:
-    transform 170ms ease,
-    box-shadow 170ms ease,
-    background 170ms ease;
-}
-
-.task-drawer-toggle:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 42px rgba(23, 32, 51, 0.2);
-}
-
-.task-drawer-toggle.open {
-  background: #fff;
-  color: var(--accent);
-}
-
-.task-nav {
-  position: fixed;
-  right: 16px;
-  top: 84px;
+  left: 16px;
+  top: 16px;
   bottom: 16px;
-  z-index: 55;
-  width: min(300px, calc(100vw - 28px));
+  z-index: 45;
+  width: 236px;
   display: grid;
   align-content: start;
-  gap: 7px;
-  margin: 0;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   border: 1px solid color-mix(in srgb, var(--line) 76%, #fff);
   border-radius: 8px;
   background:
@@ -546,52 +516,148 @@ h2 {
   backdrop-filter: blur(14px);
   box-shadow: 0 24px 70px rgba(23, 32, 51, 0.18);
   overflow: auto;
-  transform: translateX(calc(100% + 28px));
   transition:
-    transform 220ms ease,
-    opacity 180ms ease;
-  opacity: 0;
+    width 220ms ease,
+    padding 220ms ease;
 }
 
-.task-nav.open {
-  transform: translateX(0);
-  opacity: 1;
+.left-app-nav.collapsed {
+  width: 72px;
+  padding: 12px 10px;
 }
 
-.task-drawer-head {
+body:not([data-view="guide"]) .app-shell {
+  width: min(1040px, calc(100% - 292px));
+  margin-left: 276px;
+  margin-right: 16px;
+}
+
+body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
+  width: min(1120px, calc(100% - 128px));
+  margin-left: 104px;
+}
+
+.left-nav-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 4px 2px 8px;
 }
 
-.task-drawer-head strong,
-.task-drawer-head span {
+.left-nav-brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.left-nav-brand img {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  object-fit: contain;
+}
+
+.left-nav-brand strong,
+.left-nav-brand span {
   display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.task-drawer-head strong {
+.left-nav-brand strong {
   color: var(--ink);
-  font-size: 17px;
+  font-size: 16px;
 }
 
-.task-drawer-head span {
+.left-nav-brand span {
   margin-top: 2px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 800;
 }
 
-.drawer-close {
+.left-nav-collapse {
   width: 34px;
   height: 34px;
+  flex: 0 0 34px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fff;
   color: var(--ink);
   font-size: 20px;
   line-height: 1;
+}
+
+.left-nav-section {
+  display: grid;
+  gap: 7px;
+  padding-top: 12px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.left-nav-link,
+.task-filter {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.left-nav-link:hover,
+.left-nav-link.active,
+.task-filter:hover,
+.task-filter.active {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
+.nav-icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--accent);
+  font-weight: 950;
+}
+
+.nav-text,
+.left-nav-label,
+.left-nav-brand div,
+.task-nav p {
+  transition:
+    opacity 160ms ease,
+    width 160ms ease;
+}
+
+.left-nav-label {
+  margin: 0 4px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.task-nav {
+  display: grid;
+  gap: 7px;
 }
 
 .task-nav-inner {
@@ -601,22 +667,7 @@ h2 {
 }
 
 .task-filter {
-  min-height: 42px;
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding: 0 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--muted);
-  font-weight: 900;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease,
-    color 160ms ease;
 }
 
 .task-filter strong {
@@ -630,19 +681,33 @@ h2 {
   font-size: 12px;
 }
 
-.task-filter:hover,
-.task-filter.active {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
-  background: var(--accent-wash);
-  color: var(--accent);
-}
-
 .task-nav p {
   margin: 0 2px;
   color: var(--muted);
   font-size: 12px;
   font-weight: 750;
+}
+
+.left-app-nav.collapsed .left-nav-brand div,
+.left-app-nav.collapsed .nav-text,
+.left-app-nav.collapsed .left-nav-label,
+.left-app-nav.collapsed .task-nav p,
+.left-app-nav.collapsed .task-filter span {
+  width: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.left-app-nav.collapsed .left-nav-head,
+.left-app-nav.collapsed .left-nav-link,
+.left-app-nav.collapsed .task-filter {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.left-app-nav.collapsed .task-filter strong {
+  min-width: 26px;
 }
 
 .stack,
@@ -1809,9 +1874,48 @@ dialog::backdrop {
 }
 
 @media (max-width: 860px) {
+  body:not([data-view="guide"]) .app-shell,
+  body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
+    width: min(100% - 20px, 680px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 54px;
+  }
+
+  .left-app-nav {
+    left: 8px;
+    top: 10px;
+    bottom: 10px;
+    width: min(238px, calc(100vw - 24px));
+    padding: 12px;
+  }
+
+  .left-app-nav.collapsed {
+    width: 48px;
+    padding: 10px 6px;
+    overflow: hidden;
+  }
+
+  .left-app-nav.collapsed .left-nav-brand img {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
+  .left-app-nav.collapsed .left-nav-collapse {
+    width: 32px;
+    height: 32px;
+    flex-basis: 32px;
+  }
+
   .app-shell {
     width: min(100% - 20px, 680px);
     padding: 18px 0;
+  }
+
+  body:not([data-view="guide"]) .app-shell,
+  body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
+    padding-left: 54px;
   }
 
   .topbar,
@@ -1903,28 +2007,7 @@ dialog::backdrop {
     font-size: 26px;
   }
 
-  .task-nav {
-    left: 10px;
-    right: 10px;
-    top: auto;
-    bottom: 76px;
-    width: auto;
-    max-height: min(62vh, 460px);
-    transform: translateY(calc(100% + 100px));
-    overflow: auto;
-  }
-
-  .task-nav-inner {
-    display: grid;
-  }
-
   .task-filter {
-    min-height: 46px;
-  }
-
-  .task-drawer-toggle {
-    right: 12px;
-    bottom: 12px;
     min-height: 46px;
   }
 

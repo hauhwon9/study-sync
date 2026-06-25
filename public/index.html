@@ -27,6 +27,41 @@
         </div>
       </section>
 
+      <aside class="left-app-nav app-view" id="leftAppNav" hidden>
+        <div class="left-nav-head">
+          <div class="left-nav-brand">
+            <img id="leftNavMascot" src="/assets/xiaobai.png" alt="" />
+            <div>
+              <strong>学习导航</strong>
+              <span id="leftNavName">小白的小窝</span>
+            </div>
+          </div>
+          <button class="left-nav-collapse" id="leftNavCollapse" type="button" title="收起导航">‹</button>
+        </div>
+        <div class="left-nav-section">
+          <button class="left-nav-link active" data-left-nav="own" type="button">
+            <span class="nav-icon">⌂</span>
+            <span class="nav-text">我的主页</span>
+          </button>
+          <button class="left-nav-link" data-left-nav="partner" type="button">
+            <span class="nav-icon">♡</span>
+            <span class="nav-text">对方主页</span>
+          </button>
+          <button class="left-nav-link" data-left-nav="calendar" type="button">
+            <span class="nav-icon">□</span>
+            <span class="nav-text">DDL 月历</span>
+          </button>
+          <button class="left-nav-link" data-left-nav="messages" type="button">
+            <span class="nav-icon">✎</span>
+            <span class="nav-text">留言与时间线</span>
+          </button>
+        </div>
+        <div class="left-nav-section task-nav-section">
+          <p class="left-nav-label">我的任务</p>
+          <nav class="task-nav" id="taskNav" aria-label="任务筛选"></nav>
+        </div>
+      </aside>
+
       <section class="topbar app-view" id="appTopbar" hidden>
         <div class="title-block">
           <p class="eyebrow">Paw Study</p>
@@ -90,8 +125,6 @@
             </div>
             <button class="primary-btn" id="openTaskDialog" type="button">新增任务</button>
           </div>
-          <button class="task-drawer-toggle" id="taskDrawerToggle" type="button">任务导航</button>
-          <nav class="task-nav task-drawer" id="taskNav" aria-label="任务筛选"></nav>
           <div class="task-list" id="taskList"></div>
           <div class="panel-heading task-heading other-heading">
             <div>
