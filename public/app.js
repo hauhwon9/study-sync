@@ -18,6 +18,7 @@ const partnerTaskList = document.querySelector("#partnerTaskList");
 const taskNav = document.querySelector("#taskNav");
 const leftAppNav = document.querySelector("#leftAppNav");
 const leftNavCollapse = document.querySelector("#leftNavCollapse");
+const leftNavExpand = document.querySelector("#leftNavExpand");
 const leftNavMascot = document.querySelector("#leftNavMascot");
 const leftNavName = document.querySelector("#leftNavName");
 const messageFeed = document.querySelector("#messageFeed");
@@ -297,6 +298,7 @@ function renderLeftNav() {
   leftNavMascot.src = mascotFor(currentUserId);
   leftNavName.textContent = `${userById(currentUserId).name}的小窝`;
   leftAppNav.classList.toggle("collapsed", leftNavCollapsed);
+  leftNavExpand.hidden = !leftNavCollapsed;
   leftNavCollapse.textContent = leftNavCollapsed ? "›" : "‹";
   leftNavCollapse.title = leftNavCollapsed ? "展开导航" : "收起导航";
 
@@ -876,8 +878,8 @@ document.addEventListener("click", event => {
     return;
   }
 
-  if (event.target.closest("#leftNavCollapse")) {
-    leftNavCollapsed = !leftNavCollapsed;
+  if (event.target.closest("#leftNavCollapse") || event.target.closest("#leftNavExpand")) {
+    leftNavCollapsed = event.target.closest("#leftNavCollapse") ? true : false;
     localStorage.setItem("study-sync-left-nav", leftNavCollapsed ? "collapsed" : "expanded");
     renderShell();
     renderLeftNav();

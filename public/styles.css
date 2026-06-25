@@ -71,12 +71,13 @@ body::after {
   position: fixed;
   inset: auto 28px 34px auto;
   z-index: -1;
-  width: min(24vw, 260px);
-  height: min(24vw, 260px);
+  width: 150px;
+  height: 150px;
   pointer-events: none;
   background:
-    url("data:image/svg+xml,%3Csvg width='260' height='260' viewBox='0 0 260 260' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23172033' stroke-width='7' stroke-linecap='round' stroke-linejoin='round' opacity='.72'%3E%3Cpath d='M70 139c-16-4-29-19-29-39 0-25 20-45 45-45 8 0 15 2 21 6 8-12 22-20 39-20 25 0 46 20 46 45 0 8-2 15-6 21 15 8 25 23 25 41 0 25-20 45-45 45H99c-16 0-29-9-35-22'/%3E%3Cpath d='M94 88c-10 11-15 25-14 43M179 91c8 13 11 26 8 41'/%3E%3Cpath d='M107 132h.1M159 132h.1'/%3E%3Cpath d='M130 145c5 5 11 5 16 0M137 143v13'/%3E%3Cpath d='M90 194c-11 9-23 22-28 37M173 194c13 8 24 20 31 37'/%3E%3Cpath d='M106 218c14 7 39 7 55 0'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
-  opacity: 0.12;
+    var(--mascot-url) center / contain no-repeat;
+  opacity: 0.06;
+  filter: saturate(0.75);
 }
 
 button,
@@ -529,8 +530,8 @@ h2 {
   box-shadow: 0 24px 70px rgba(23, 32, 51, 0.18);
   overflow: auto;
   transition:
-    width 220ms ease,
-    padding 220ms ease;
+    transform 220ms ease,
+    opacity 180ms ease;
 }
 
 .left-app-nav::after,
@@ -555,8 +556,9 @@ h2 {
 }
 
 .left-app-nav.collapsed {
-  width: 72px;
-  padding: 12px 10px;
+  transform: translateX(calc(-100% - 24px));
+  opacity: 0;
+  pointer-events: none;
 }
 
 body:not([data-view="guide"]) .app-shell {
@@ -566,8 +568,29 @@ body:not([data-view="guide"]) .app-shell {
 }
 
 body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
-  width: min(1120px, calc(100% - 128px));
-  margin-left: 104px;
+  width: min(1180px, calc(100% - 32px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.left-nav-expand {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  z-index: 58;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 12px 28px rgba(23, 32, 51, 0.14);
+  font-weight: 950;
+}
+
+.left-nav-expand:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(23, 32, 51, 0.18);
 }
 
 .left-nav-head {
@@ -731,28 +754,6 @@ body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
   color: var(--muted);
   font-size: 12px;
   font-weight: 750;
-}
-
-.left-app-nav.collapsed .left-nav-brand div,
-.left-app-nav.collapsed .nav-text,
-.left-app-nav.collapsed .left-nav-label,
-.left-app-nav.collapsed .task-nav p,
-.left-app-nav.collapsed .task-filter span {
-  width: 0;
-  opacity: 0;
-  overflow: hidden;
-}
-
-.left-app-nav.collapsed .left-nav-head,
-.left-app-nav.collapsed .left-nav-link,
-.left-app-nav.collapsed .task-filter {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.left-app-nav.collapsed .task-filter strong {
-  min-width: 26px;
 }
 
 .stack,
@@ -1924,7 +1925,6 @@ dialog::backdrop {
     width: min(100% - 20px, 680px);
     margin-left: auto;
     margin-right: auto;
-    padding-left: 54px;
   }
 
   .left-app-nav {
@@ -1935,32 +1935,9 @@ dialog::backdrop {
     padding: 12px;
   }
 
-  .left-app-nav.collapsed {
-    width: 48px;
-    padding: 10px 6px;
-    overflow: hidden;
-  }
-
-  .left-app-nav.collapsed .left-nav-brand img {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
-  }
-
-  .left-app-nav.collapsed .left-nav-collapse {
-    width: 32px;
-    height: 32px;
-    flex-basis: 32px;
-  }
-
   .app-shell {
     width: min(100% - 20px, 680px);
     padding: 18px 0;
-  }
-
-  body:not([data-view="guide"]) .app-shell,
-  body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
-    padding-left: 54px;
   }
 
   .topbar,
