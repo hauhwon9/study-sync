@@ -16,6 +16,9 @@
   --warm: #f7bf4f;
   --mascot-url: url("/assets/xiaobai.png");
   --partner-mascot-url: url("/assets/xiaojimao.png");
+  --study-sticker-main: url("/assets/study-dog-reading.jpg");
+  --study-sticker-grad-1: url("/assets/study-dog-grad-1.jpg");
+  --study-sticker-grad-2: url("/assets/study-dog-grad-2.jpg");
   --shadow: 0 18px 45px rgba(23, 32, 51, 0.1);
 }
 
@@ -71,13 +74,15 @@ body::after {
   position: fixed;
   inset: auto 28px 34px auto;
   z-index: -1;
-  width: 150px;
-  height: 150px;
+  width: min(32vw, 360px);
+  height: min(19vw, 214px);
   pointer-events: none;
   background:
-    var(--mascot-url) center / contain no-repeat;
-  opacity: 0.06;
-  filter: saturate(0.75);
+    linear-gradient(90deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.72)),
+    var(--study-sticker-main) center / cover no-repeat;
+  border-radius: 8px;
+  opacity: 0.18;
+  filter: saturate(0.86);
 }
 
 button,
@@ -173,25 +178,29 @@ button {
   pointer-events: none;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
-  opacity: 0.1;
-  filter: saturate(0.75);
+  background-size: cover;
+  border-radius: 8px;
+  opacity: 0.12;
+  filter: saturate(0.8);
+  box-shadow: 0 18px 44px rgba(23, 32, 51, 0.08);
 }
 
 .xiaobai-bg {
   top: 96px;
   right: max(18px, calc((100vw - 1180px) / 2 - 90px));
-  width: 220px;
-  height: 220px;
-  background-image: url("/assets/xiaobai.png");
+  width: 210px;
+  height: 210px;
+  background-image: var(--study-sticker-grad-1);
+  transform: rotate(4deg);
 }
 
 .xiaojimao-bg {
   left: max(14px, calc((100vw - 1180px) / 2 - 108px));
   bottom: 44px;
-  width: 250px;
-  height: 250px;
-  background-image: url("/assets/xiaojimao.png");
+  width: 230px;
+  height: 230px;
+  background-image: var(--study-sticker-grad-2);
+  transform: rotate(-5deg);
 }
 
 .topbar,
@@ -464,27 +473,30 @@ h2 {
 
 .main-panel::after {
   right: 18px;
-  top: 18px;
-  width: 54px;
-  height: 36px;
-  border-right: 0;
-  border-bottom: 0;
-  border-radius: 28px 0 0 0;
+  top: 14px;
+  width: 96px;
+  height: 96px;
+  border: 0;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.38)),
+    var(--study-sticker-grad-2) center / cover no-repeat;
+  opacity: 0.08;
+  transform: rotate(3deg);
 }
 
 .side-panel::after {
-  left: 16px;
+  right: 16px;
   bottom: 16px;
-  width: 38px;
-  height: 28px;
-  border-radius: 50%;
+  width: 86px;
+  height: 62px;
+  border-radius: 8px;
   background:
-    radial-gradient(circle at 10px 8px, var(--accent) 0 3px, transparent 4px),
-    radial-gradient(circle at 19px 5px, var(--accent) 0 3px, transparent 4px),
-    radial-gradient(circle at 28px 10px, var(--accent) 0 3px, transparent 4px),
-    radial-gradient(ellipse at 19px 20px, var(--accent) 0 8px, transparent 9px);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.48)),
+    var(--study-sticker-main) center / cover no-repeat;
   border: 0;
-  opacity: 0.08;
+  opacity: 0.1;
+  transform: rotate(-3deg);
 }
 
 .main-panel {
@@ -540,19 +552,19 @@ h2 {
   content: "";
   position: absolute;
   pointer-events: none;
-  border: 2px solid color-mix(in srgb, var(--accent) 20%, transparent);
-  opacity: 0.32;
 }
 
 .left-app-nav::after {
   right: 18px;
   bottom: 18px;
-  width: 46px;
-  height: 32px;
-  border-top: 0;
-  border-left: 0;
-  border-radius: 0 0 28px 0;
-  transform: rotate(-10deg);
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.42)),
+    var(--study-sticker-grad-1) center / cover no-repeat;
+  opacity: 0.11;
+  transform: rotate(-8deg);
 }
 
 .left-app-nav.collapsed {
