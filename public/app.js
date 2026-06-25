@@ -5,6 +5,7 @@ let mode = "guide";
 let pendingLoginUserId = null;
 let calendarCursor = new Date();
 let selectedCalendarDate = dateKey(new Date());
+let taskFilter = "active";
 
 const guideView = document.querySelector("#guideView");
 const appViews = document.querySelectorAll(".app-view");
@@ -12,6 +13,7 @@ const dashboard = document.querySelector("#dashboard");
 const todayPanel = document.querySelector("#todayPanel");
 const taskList = document.querySelector("#taskList");
 const partnerTaskList = document.querySelector("#partnerTaskList");
+const taskNav = document.querySelector("#taskNav");
 const messageFeed = document.querySelector("#messageFeed");
 const timelineFeed = document.querySelector("#timelineFeed");
 const ddlCalendar = document.querySelector("#ddlCalendar");
@@ -150,6 +152,12 @@ function taskValue(task) {
 
 function taskCompletion(task) {
   return Math.round((taskValue(task) / Math.max(1, task.totalSteps)) * 100);
+}
+
+function taskStatus(task) {
+  if (task.status === "archived") return "archived";
+  if (taskCompletion(task) === 100) return "completed";
+  return "active";
 }
 
 function allProgressFor(userId) {
@@ -375,6 +383,8 @@ function timelineLabel(item) {
     "task:create": "新建了任务",
     "task:update": "更新了任务",
     "task:delete": "删除了任务",
+    "task:archive": "归档了任务",
+    "task:restore": "恢复了任务",
     "task:complete": "完成了任务",
     "progress:set": "更新了进度",
     "step:done": "勾选了步骤",
@@ -566,16 +576,41 @@ function renderProfilePanel() {
   renderProfileMessages(viewed.id);
 }
 
+function renderTaskNav(tasks, readonly) {
+  const items = [
+    { key: "active", label: "进行中", count: tasks.filter(task => taskStatus(task) === "active").length },
+    { key: "completed", label: "已完成", count: tasks.filter(task => taskStatus(task) === "completed").length },
+    { key: "archived", label: "已归档", count: tasks.filter(task => taskStatus(task) === "archived").length }
+  ];
+
+  taskNav.innerHTML = `
+    <div class="task-nav-inner">
+      ${items
+        .map(
+          item => `
+            <button class="task-filter ${taskFilter === item.key ? "active" : ""}" data-task-filter="${item.key}" type="button">
+              <span>${escapeHtml(item.label)}</span>
+              <strong>${item.count}</strong>
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+    ${readonly ? `<p>${escapeHtml(userById(viewUserId).name)}的任务概览</p>` : `<p>把完成任务归档后，当前列表会更清爽。</p>`}
+  `;
+}
+
 function renderTaskCard(task, readonly) {
   const owner = userById(task.ownerId);
   const value = taskValue(task);
   const percent = taskCompletion(task);
+  const status = taskStatus(task);
   const taskMessages = stateRef.data.messages
     .filter(message => message.channel === "task" && message.taskId === task.id)
     .slice(0, 2);
 
   return `
-    <article class="task-card ${readonly ? "readonly" : ""}" data-task-id="${task.id}">
+    <article class="task-card ${readonly ? "readonly" : ""} ${status === "archived" ? "archived" : ""}" data-task-id="${task.id}">
       <button class="task-open" data-task-id="${task.id}" type="button" aria-label="查看任务详情"></button>
       <div class="task-title">
         <div>
@@ -587,6 +622,8 @@ function renderTaskCard(task, readonly) {
       <div class="task-meta">
         <span class="chip">${escapeHtml(owner.name)}</span>
         <span class="chip">${escapeHtml(task.subject || "学习")}</span>
+        ${status === "completed" ? `<span class="chip done">已完成</span>` : ""}
+        ${status === "archived" ? `<span class="chip muted-chip">已归档</span>` : ""}
         ${task.dueDate ? `<span class="chip warning">${escapeHtml(dueLabel(task))}</span>` : ""}
         <span class="chip">${value}/${task.totalSteps} 步</span>
       </div>
@@ -629,7 +666,12 @@ function renderTaskCard(task, readonly) {
         readonly
           ? ""
           : `<div class="task-actions">
-              <button class="ghost-btn complete-mine" type="button">全部完成</button>
+              ${
+                status === "archived"
+                  ? `<button class="ghost-btn restore-task" type="button">恢复</button>`
+                  : `<button class="ghost-btn archive-task" type="button">归档</button>`
+              }
+              ${status === "completed" || status === "archived" ? "" : `<button class="ghost-btn complete-mine" type="button">全部完成</button>`}
               <button class="ghost-btn delete-task" type="button">删除</button>
             </div>`
       }
@@ -641,15 +683,17 @@ function renderTasks() {
   const viewed = userById(viewUserId);
   const readonly = viewUserId !== currentUserId;
   const tasks = tasksFor(viewed.id);
+  const visibleTasks = tasks.filter(task => taskStatus(task) === taskFilter);
 
   planTitle.textContent = readonly ? `${viewed.name}的计划` : `${viewed.name}的今日小窝`;
   partnerTitle.textContent = readonly ? "主页留言" : "任务留言";
   openTaskDialog.hidden = readonly;
   partnerTaskList.hidden = true;
+  renderTaskNav(tasks, readonly);
 
-  taskList.innerHTML = tasks.length
-    ? tasks.map(task => renderTaskCard(task, readonly)).join("")
-    : `<article class="task-card"><p class="task-notes">${escapeHtml(viewed.name)}的小窝还空着。</p></article>`;
+  taskList.innerHTML = visibleTasks.length
+    ? visibleTasks.map(task => renderTaskCard(task, readonly)).join("")
+    : `<article class="task-card empty-task"><p class="task-notes">${escapeHtml(viewed.name)}这里暂时没有${taskFilter === "active" ? "进行中的" : taskFilter === "completed" ? "已完成的" : "已归档的"}任务。</p></article>`;
 }
 
 function render() {
@@ -805,6 +849,13 @@ document.addEventListener("click", event => {
     return;
   }
 
+  const taskFilterButton = event.target.closest("[data-task-filter]");
+  if (taskFilterButton) {
+    taskFilter = taskFilterButton.dataset.taskFilter;
+    renderTasks();
+    return;
+  }
+
   if (event.target.closest("#profileJump")) {
     if (mode === "profile") showOwn();
     else showProfile(otherUser(currentUserId).id);
@@ -868,6 +919,16 @@ document.addEventListener("click", event => {
     triggerPawBurst(card);
     activeMascot.classList.add("mascot-hop");
     window.setTimeout(() => activeMascot.classList.remove("mascot-hop"), 700);
+    return;
+  }
+
+  if (event.target.closest(".archive-task")) {
+    postAction("task:archive", { taskId: task.id, archived: true });
+    return;
+  }
+
+  if (event.target.closest(".restore-task")) {
+    postAction("task:archive", { taskId: task.id, archived: false });
     return;
   }
 

@@ -142,6 +142,7 @@ function normalizeState(state) {
       ownerId,
       steps,
       totalSteps: steps.length,
+      status: task.status === "archived" ? "archived" : "active",
       progress: { [ownerId]: steps.filter(step => step.done).length }
     };
   });
@@ -359,6 +360,7 @@ function applyAction(state, action, actorId) {
       totalSteps: steps.length,
       notes: cleanText(payload.notes).slice(0, 240),
       steps,
+      status: "active",
       progress: { [owner.id]: 0 },
       createdAt: new Date().toISOString()
     };
@@ -394,6 +396,20 @@ function applyAction(state, action, actorId) {
       taskId: task.id,
       body: `更新任务：${task.title}`,
       meta: { title: task.title, dueDate: task.dueDate }
+    });
+    return state;
+  }
+
+  if (action.type === "task:archive") {
+    const task = state.tasks.find(item => item.id === payload.taskId);
+    if (!task || task.ownerId !== actorId) return state;
+    task.status = payload.archived ? "archived" : "active";
+    addTimeline(state, {
+      type: payload.archived ? "task:archive" : "task:restore",
+      userId: actorId,
+      taskId: task.id,
+      body: `${payload.archived ? "归档任务" : "恢复任务"}：${task.title}`,
+      meta: { title: task.title }
     });
     return state;
   }

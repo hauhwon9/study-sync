@@ -497,6 +497,71 @@ h2 {
   font-size: 13px;
 }
 
+.task-nav {
+  position: sticky;
+  top: 12px;
+  z-index: 8;
+  display: grid;
+  gap: 7px;
+  margin: -2px 0 14px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--line) 76%, #fff);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(14px);
+}
+
+.task-nav-inner {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.task-filter {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.task-filter strong {
+  min-width: 28px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 10%, #fff);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+.task-filter:hover,
+.task-filter.active {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: var(--accent-wash);
+  color: var(--accent);
+}
+
+.task-nav p {
+  margin: 0 2px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
 .stack,
 .dialog-card {
   display: grid;
@@ -1147,6 +1212,18 @@ select:focus {
   transform: translateY(0) rotate(-10deg);
 }
 
+.task-card.archived {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.62)),
+    repeating-linear-gradient(135deg, transparent 0 10px, color-mix(in srgb, var(--accent) 4%, transparent) 10px 20px);
+}
+
+.task-card.empty-task {
+  min-height: 116px;
+  display: grid;
+  place-items: center;
+}
+
 .profile-panel {
   margin-bottom: 16px;
   padding: 16px;
@@ -1282,6 +1359,16 @@ select:focus {
 .chip.warning {
   background: #fff7ed;
   color: var(--amber);
+}
+
+.chip.done {
+  background: color-mix(in srgb, var(--green) 12%, #fff);
+  color: var(--green);
+}
+
+.chip.muted-chip {
+  background: #f3f4f6;
+  color: var(--muted);
 }
 
 .progress-stack {
@@ -1668,6 +1755,11 @@ dialog::backdrop {
   .side-panel {
     position: static;
     width: 100%;
+    order: 2;
+  }
+
+  .main-panel {
+    order: 1;
   }
 
   .task-heading {
@@ -1690,6 +1782,66 @@ dialog::backdrop {
 }
 
 @media (max-width: 520px) {
+  body {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.64), transparent 38%),
+      var(--bg);
+  }
+
+  .app-shell {
+    width: min(100% - 12px, 520px);
+    padding: 10px 0 18px;
+  }
+
+  .topbar,
+  .dashboard,
+  .today-panel,
+  .main-panel,
+  .side-panel {
+    border-radius: 8px;
+  }
+
+  .main-panel,
+  .side-panel {
+    padding: 12px;
+  }
+
+  .dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metric {
+    min-height: 92px;
+    padding: 12px;
+  }
+
+  .metric strong {
+    font-size: 26px;
+  }
+
+  .task-nav {
+    top: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .task-nav-inner {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 2px;
+  }
+
+  .task-filter {
+    flex: 0 0 128px;
+    scroll-snap-align: start;
+  }
+
+  .task-card {
+    padding: 13px;
+  }
+
   .task-title,
   .progress-row,
   .task-message {
@@ -1697,8 +1849,45 @@ dialog::backdrop {
     flex-direction: column;
   }
 
+  .task-title {
+    gap: 8px;
+  }
+
+  .task-title strong {
+    font-size: 16px;
+  }
+
+  .task-title .icon-btn {
+    width: 100%;
+    height: 36px;
+  }
+
+  .task-meta {
+    gap: 6px;
+    margin: 8px 0 12px;
+  }
+
+  .chip {
+    min-height: 26px;
+    font-size: 11px;
+  }
+
   .stepper {
-    width: 124px;
+    width: 100%;
+    grid-template-columns: 1fr 52px 1fr;
+  }
+
+  .task-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .task-actions .delete-task {
+    grid-column: 1 / -1;
+  }
+
+  .task-message {
+    display: none;
   }
 
   .step-item {
