@@ -16,3 +16,7 @@ services:
         sync: false
       - key: JIMAO_PASSWORD
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

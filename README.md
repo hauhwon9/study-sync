@@ -119,6 +119,39 @@ data/app-state.json
 
 也可以通过 `DATA_FILE` 环境变量指定到持久化磁盘。云平台或 Docker 部署时，一定要启用持久化存储；否则容器重启或重新部署后可能会丢数据。
 
+### Supabase 数据库保存
+
+Render 免费服务的本地文件会重置，长期使用建议接 Supabase 数据库。
+
+1. 在 Supabase 新建 Project。
+2. 打开 SQL Editor，执行：
+
+```sql
+create table if not exists public.app_state (
+  id text primary key,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_state enable row level security;
+```
+
+3. 在 Supabase Project Settings → API 里复制：
+   - Project URL
+   - service_role key
+4. 在 Render 服务的 Environment 里添加：
+
+```text
+SUPABASE_URL=你的 Project URL
+SUPABASE_SERVICE_ROLE_KEY=你的 service_role key
+```
+
+5. 重新部署 Render。
+
+设置了这两个环境变量后，服务端会自动把任务、留言、时间线保存到 Supabase；没设置时会继续使用本地 `data/app-state.json`。
+
+`SUPABASE_SERVICE_ROLE_KEY` 只能放在 Render 环境变量里，不要写进前端代码，也不要提交到 GitHub。
+
 ## 功能
 
 - 小白 / 鸡毛两个角色入口

@@ -8,6 +8,10 @@ const HOST = process.env.HOST || "0.0.0.0";
 const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, "data", "app-state.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
 const AUTH_SECRET = process.env.AUTH_SECRET || "local-study-sync-secret";
+const SUPABASE_URL = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const SUPABASE_TABLE = process.env.SUPABASE_TABLE || "app_state";
+const USE_SUPABASE = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 const ROLE_PASSWORDS = {
   xiaobai: process.env.XIAOBAI_PASSWORD || "",
   xiaojimao: process.env.JIMAO_PASSWORD || ""
@@ -88,9 +92,22 @@ function ensureStateFile() {
   }
 }
 
-function readState() {
+async function readState() {
+  if (USE_SUPABASE) return readSupabaseState();
   ensureStateFile();
   return normalizeState(JSON.parse(fs.readFileSync(DATA_FILE, "utf8")));
+}
+
+async function readSupabaseState() {
+  const response = await supabaseRequest(`/${SUPABASE_TABLE}?id=eq.main&select=data`, {
+    method: "GET"
+  });
+  const rows = await response.json();
+  if (Array.isArray(rows) && rows[0]?.data) return normalizeState(rows[0].data);
+
+  const initialState = normalizeState(structuredClone(defaultState));
+  await writeSupabaseState(initialState, false);
+  return initialState;
 }
 
 function normalizeState(state) {
@@ -187,10 +204,40 @@ function stepsFromPayload(payload, existingSteps = []) {
   }));
 }
 
-function writeState(state) {
+async function writeState(state) {
   state.updatedAt = new Date().toISOString();
+  if (USE_SUPABASE) {
+    await writeSupabaseState(state);
+    return;
+  }
   fs.writeFileSync(DATA_FILE, JSON.stringify(state, null, 2));
   broadcast(state);
+}
+
+async function writeSupabaseState(state, shouldBroadcast = true) {
+  await supabaseRequest(`/${SUPABASE_TABLE}`, {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({ id: "main", data: state, updated_at: state.updatedAt })
+  });
+  if (shouldBroadcast) broadcast(state);
+}
+
+async function supabaseRequest(pathname, options = {}) {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1${pathname}`, {
+    ...options,
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`数据库请求失败：${response.status} ${body}`);
+  }
+  return response;
 }
 
 function broadcast(state) {
@@ -509,14 +556,14 @@ function serveStatic(req, res) {
 
 const server = http.createServer(async (req, res) => {
   if (req.url === "/api/state" && req.method === "GET") {
-    sendJson(res, 200, readState());
+    sendJson(res, 200, await readState());
     return;
   }
 
   if (req.url === "/api/login" && req.method === "POST") {
     try {
       const payload = await readBody(req);
-      const user = readState().users.find(item => item.id === payload.userId);
+      const user = (await readState()).users.find(item => item.id === payload.userId);
       if (!user) {
         sendJson(res, 404, { error: "角色不存在" });
         return;
@@ -541,8 +588,8 @@ const server = http.createServer(async (req, res) => {
     try {
       const action = await readBody(req);
       const actorId = actorFromAction(action);
-      const state = applyAction(readState(), action, actorId);
-      writeState(state);
+      const state = applyAction(await readState(), action, actorId);
+      await writeState(state);
       sendJson(res, 200, state);
     } catch (error) {
       sendJson(res, 400, { error: error.message });
@@ -556,7 +603,7 @@ const server = http.createServer(async (req, res) => {
       "Cache-Control": "no-store",
       Connection: "keep-alive"
     });
-    res.write(`event: state\ndata: ${JSON.stringify(readState())}\n\n`);
+    res.write(`event: state\ndata: ${JSON.stringify(await readState())}\n\n`);
     clients.add(res);
     req.on("close", () => clients.delete(res));
     return;
