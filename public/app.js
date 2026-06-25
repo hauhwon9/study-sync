@@ -6,6 +6,7 @@ let pendingLoginUserId = null;
 let calendarCursor = new Date();
 let selectedCalendarDate = dateKey(new Date());
 let taskFilter = "active";
+let taskDrawerOpen = window.matchMedia("(min-width: 861px)").matches;
 
 const guideView = document.querySelector("#guideView");
 const appViews = document.querySelectorAll(".app-view");
@@ -14,6 +15,7 @@ const todayPanel = document.querySelector("#todayPanel");
 const taskList = document.querySelector("#taskList");
 const partnerTaskList = document.querySelector("#partnerTaskList");
 const taskNav = document.querySelector("#taskNav");
+const taskDrawerToggle = document.querySelector("#taskDrawerToggle");
 const messageFeed = document.querySelector("#messageFeed");
 const timelineFeed = document.querySelector("#timelineFeed");
 const ddlCalendar = document.querySelector("#ddlCalendar");
@@ -584,6 +586,13 @@ function renderTaskNav(tasks, readonly) {
   ];
 
   taskNav.innerHTML = `
+    <div class="task-drawer-head">
+      <div>
+        <strong>任务导航</strong>
+        <span>${escapeHtml(userById(viewUserId).name)}的小窝</span>
+      </div>
+      <button class="drawer-close" type="button" title="收起任务导航">×</button>
+    </div>
     <div class="task-nav-inner">
       ${items
         .map(
@@ -598,6 +607,8 @@ function renderTaskNav(tasks, readonly) {
     </div>
     ${readonly ? `<p>${escapeHtml(userById(viewUserId).name)}的任务概览</p>` : `<p>把完成任务归档后，当前列表会更清爽。</p>`}
   `;
+  taskNav.classList.toggle("open", taskDrawerOpen);
+  taskDrawerToggle.classList.toggle("open", taskDrawerOpen);
 }
 
 function renderTaskCard(task, readonly) {
@@ -846,6 +857,20 @@ document.addEventListener("click", event => {
   if (navButton) {
     if (navButton.dataset.nav === "guide") showGuide();
     if (navButton.dataset.nav === "own") showOwn();
+    return;
+  }
+
+  if (event.target.closest("#taskDrawerToggle")) {
+    taskDrawerOpen = !taskDrawerOpen;
+    taskNav.classList.toggle("open", taskDrawerOpen);
+    taskDrawerToggle.classList.toggle("open", taskDrawerOpen);
+    return;
+  }
+
+  if (event.target.closest(".drawer-close")) {
+    taskDrawerOpen = false;
+    taskNav.classList.remove("open");
+    taskDrawerToggle.classList.remove("open");
     return;
   }
 
