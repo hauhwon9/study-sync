@@ -1676,6 +1676,31 @@ select:focus {
   opacity: 0.1;
 }
 
+.task-card.inProgress {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--owner, var(--accent)) 8%, #fff), #fff 58%);
+}
+
+.task-card.unfinished {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, #fee2e2 58%, #fff), #fff 62%);
+  border-color: color-mix(in srgb, #ef4444 24%, var(--line));
+  border-left-color: #ef4444;
+}
+
+.task-card.unfinished::after {
+  background:
+    radial-gradient(circle at 9px 7px, #ef4444 0 4px, transparent 5px),
+    radial-gradient(circle at 20px 4px, #ef4444 0 4px, transparent 5px),
+    radial-gradient(circle at 30px 10px, #ef4444 0 4px, transparent 5px),
+    radial-gradient(ellipse at 19px 21px, #ef4444 0 10px, transparent 11px);
+  opacity: 0.12;
+}
+
+.task-card.unfinished .task-title {
+  padding-right: 76px;
+}
+
 .task-card:hover::after {
   opacity: 0.12;
   transform: translateY(0) rotate(-10deg);
@@ -1835,9 +1860,39 @@ select:focus {
   color: var(--green);
 }
 
+.chip.progress-chip {
+  background: color-mix(in srgb, var(--accent) 12%, #fff);
+  color: var(--accent);
+}
+
+.chip.angry {
+  background: #fff1f2;
+  color: #b91c1c;
+}
+
 .chip.muted-chip {
   background: #f3f4f6;
   color: var(--muted);
+}
+
+.angry-badge {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  z-index: 2;
+  display: inline-grid;
+  place-items: center;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgba(185, 28, 28, 0.16);
+  border-radius: 999px;
+  background: #fff1f2;
+  color: #b91c1c;
+  box-shadow: 0 8px 18px rgba(239, 68, 68, 0.12);
+  font-size: 12px;
+  font-weight: 950;
+  transform: rotate(3deg);
+  pointer-events: none;
 }
 
 .progress-stack {

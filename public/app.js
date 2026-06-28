@@ -5,7 +5,7 @@ let mode = "guide";
 let pendingLoginUserId = null;
 let calendarCursor = new Date();
 let selectedCalendarDate = dateKey(new Date());
-let taskFilter = "active";
+let taskFilter = "all";
 const savedLeftNav = localStorage.getItem("study-sync-left-nav");
 let leftNavCollapsed = savedLeftNav ? savedLeftNav === "collapsed" : window.matchMedia("(max-width: 860px)").matches;
 
@@ -171,8 +171,9 @@ function taskCompletion(task) {
 
 function taskStatus(task) {
   if (task.status === "archived") return "archived";
-  if (taskCompletion(task) === 100) return "completed";
-  return "active";
+  const percent = taskCompletion(task);
+  if (percent === 100) return "completed";
+  return taskValue(task) > 0 ? "inProgress" : "unfinished";
 }
 
 function allProgressFor(userId) {
@@ -768,7 +769,8 @@ function renderProfilePanel() {
 function renderTaskNav(tasks, readonly) {
   const items = [
     { key: "all", label: "全部任务", count: tasks.length },
-    { key: "active", label: "进行中/未完成", count: tasks.filter(task => taskStatus(task) === "active").length },
+    { key: "inProgress", label: "进行中", count: tasks.filter(task => taskStatus(task) === "inProgress").length },
+    { key: "unfinished", label: "未完成", count: tasks.filter(task => taskStatus(task) === "unfinished").length },
     { key: "completed", label: "已完成", count: tasks.filter(task => taskStatus(task) === "completed").length },
     { key: "archived", label: "已归档", count: tasks.filter(task => taskStatus(task) === "archived").length }
   ];
@@ -800,8 +802,9 @@ function renderTaskCard(task, readonly) {
     .slice(0, 2);
 
   return `
-    <article class="task-card ${readonly ? "readonly" : ""} ${status === "archived" ? "archived" : ""} ${status === "completed" ? "completed" : ""}" data-task-id="${task.id}" ${taskHoverAttrs(task)} style="--owner:${owner.color}">
+    <article class="task-card ${readonly ? "readonly" : ""} ${status}" data-task-id="${task.id}" ${taskHoverAttrs(task)} style="--owner:${owner.color}">
       <button class="task-open" data-task-id="${task.id}" type="button" aria-label="查看任务详情"></button>
+      ${status === "unfinished" ? `<span class="angry-badge" aria-hidden="true">快开始!</span>` : ""}
       <div class="task-title">
         <div>
           <strong>${escapeHtml(task.title)}</strong>
@@ -812,6 +815,8 @@ function renderTaskCard(task, readonly) {
       <div class="task-meta">
         <span class="chip">${escapeHtml(owner.name)}</span>
         <span class="chip">${escapeHtml(task.subject || "学习")}</span>
+        ${status === "inProgress" ? `<span class="chip progress-chip">进行中</span>` : ""}
+        ${status === "unfinished" ? `<span class="chip angry">未完成</span>` : ""}
         ${status === "completed" ? `<span class="chip done">已完成</span>` : ""}
         ${status === "archived" ? `<span class="chip muted-chip">已归档</span>` : ""}
         ${task.dueDate ? `<span class="chip warning">${escapeHtml(dueLabel(task))}</span>` : ""}
@@ -874,6 +879,13 @@ function renderTasks() {
   const readonly = viewUserId !== currentUserId;
   const tasks = tasksFor(viewed.id);
   const visibleTasks = taskFilter === "all" ? tasks : tasks.filter(task => taskStatus(task) === taskFilter);
+  const emptyTaskLabels = {
+    all: "",
+    inProgress: "进行中的",
+    unfinished: "未完成的",
+    completed: "已完成的",
+    archived: "已归档的"
+  };
 
   planTitle.textContent = readonly ? `${viewed.name}的计划` : `${viewed.name}的今日小窝`;
   partnerTitle.textContent = readonly ? "主页留言" : "任务留言";
@@ -883,7 +895,7 @@ function renderTasks() {
 
   taskList.innerHTML = visibleTasks.length
     ? visibleTasks.map(task => renderTaskCard(task, readonly)).join("")
-    : `<article class="task-card empty-task"><p class="task-notes">${escapeHtml(viewed.name)}这里暂时没有${taskFilter === "all" ? "" : taskFilter === "active" ? "进行中/未完成的" : taskFilter === "completed" ? "已完成的" : "已归档的"}任务。</p></article>`;
+    : `<article class="task-card empty-task"><p class="task-notes">${escapeHtml(viewed.name)}这里暂时没有${emptyTaskLabels[taskFilter] || ""}任务。</p></article>`;
 }
 
 function render() {
