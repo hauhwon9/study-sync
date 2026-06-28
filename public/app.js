@@ -64,6 +64,12 @@ const skipLoginButton = document.querySelector("#skipLoginButton");
 const toast = document.querySelector("#toast");
 const hoverCard = document.querySelector("#hoverCard");
 
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+
 const formatter = new Intl.DateTimeFormat("zh-CN", {
   month: "2-digit",
   day: "2-digit",

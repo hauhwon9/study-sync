@@ -563,6 +563,7 @@ function serveStatic(req, res) {
       ".css": "text/css; charset=utf-8",
       ".js": "application/javascript; charset=utf-8",
       ".json": "application/json; charset=utf-8",
+      ".webmanifest": "application/manifest+json; charset=utf-8",
       ".jpg": "image/jpeg",
       ".jpeg": "image/jpeg",
       ".png": "image/png"
