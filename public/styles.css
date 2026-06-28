@@ -682,6 +682,55 @@ body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
   box-shadow: 0 16px 36px rgba(23, 32, 51, 0.18);
 }
 
+.mobile-tabbar {
+  display: none;
+}
+
+.mobile-tab {
+  min-width: 0;
+  min-height: 54px;
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.mobile-tab span {
+  width: 26px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.mobile-tab strong {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.mobile-tab:hover,
+.mobile-tab.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 62%, #fff);
+  transform: translateY(-1px);
+}
+
+.mobile-tab.active span {
+  background: var(--accent);
+  color: #fff;
+}
+
 .left-nav-head {
   position: relative;
   display: flex;
@@ -2395,24 +2444,50 @@ dialog::backdrop {
 }
 
 @media (max-width: 860px) {
+  body {
+    min-height: 100svh;
+  }
+
+  body:not([data-view="guide"]) {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
   body:not([data-view="guide"]) .app-shell,
   body[data-nav-collapsed="true"]:not([data-view="guide"]) .app-shell {
-    width: min(100% - 20px, 680px);
+    width: min(100% - 14px, 680px);
     margin-left: auto;
     margin-right: auto;
   }
 
-  .left-app-nav {
-    left: 8px;
-    top: 10px;
-    bottom: 10px;
-    width: min(238px, calc(100vw - 24px));
-    padding: 12px;
+  .left-app-nav,
+  .left-nav-expand {
+    display: none !important;
   }
 
   .app-shell {
-    width: min(100% - 20px, 680px);
-    padding: 18px 0;
+    width: min(100% - 14px, 680px);
+    padding: 10px 0 0;
+  }
+
+  .mobile-tabbar:not([hidden]) {
+    position: fixed;
+    left: max(8px, env(safe-area-inset-left));
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    z-index: 70;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 8px;
+    border: 1px solid color-mix(in srgb, var(--line) 76%, #fff);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow:
+      0 18px 42px rgba(23, 32, 51, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
   }
 
   .topbar,
@@ -2424,13 +2499,72 @@ dialog::backdrop {
     align-items: stretch;
   }
 
+  .topbar {
+    position: sticky;
+    top: max(8px, env(safe-area-inset-top));
+    z-index: 48;
+    flex-direction: row;
+    align-items: center;
+    min-height: 58px;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow:
+      0 12px 30px rgba(23, 32, 51, 0.11),
+      inset 0 1px 0 rgba(255, 255, 255, 0.76);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .title-block .eyebrow {
+    display: none;
+  }
+
+  .topbar h1 {
+    font-size: 19px;
+    line-height: 1.12;
+  }
+
+  .identity-switch {
+    display: none;
+  }
+
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .workspace,
+  .calendar-page,
+  .main-panel,
+  .side-panel,
+  .today-panel {
+    box-shadow: 0 12px 34px rgba(23, 32, 51, 0.08);
+  }
+
   .mascot-card {
-    width: 100%;
-    height: 150px;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   .mascot-card img {
-    width: min(260px, 70%);
+    position: static;
+    width: 58px;
+    transform: translateX(-8px);
+  }
+
+  .mascot-card:hover img,
+  .mascot-hop {
+    transform: translateX(-8px) scale(1.04);
   }
 
   .background-mascot {
@@ -2445,6 +2579,10 @@ dialog::backdrop {
 
   .main-panel {
     order: 1;
+  }
+
+  .side-panel {
+    max-height: none;
   }
 
   .task-heading {
@@ -2485,6 +2623,10 @@ dialog::backdrop {
   .main-panel,
   .side-panel {
     border-radius: 8px;
+  }
+
+  .topbar {
+    border-radius: 20px;
   }
 
   .calendar-page,

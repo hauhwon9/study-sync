@@ -6,6 +6,7 @@ let pendingLoginUserId = null;
 let calendarCursor = new Date();
 let selectedCalendarDate = dateKey(new Date());
 let taskFilter = "all";
+let activeMobileTab = "own";
 const savedLeftNav = localStorage.getItem("study-sync-left-nav");
 let leftNavCollapsed = savedLeftNav ? savedLeftNav === "collapsed" : window.matchMedia("(max-width: 860px)").matches;
 
@@ -327,6 +328,7 @@ function enterUser(userId) {
   currentUserId = userId;
   viewUserId = userId;
   mode = "own";
+  activeMobileTab = "own";
   localStorage.setItem("study-sync-user", userId);
   setRoute("own");
   render();
@@ -335,6 +337,7 @@ function enterUser(userId) {
 function showGuide() {
   mode = "guide";
   viewUserId = null;
+  activeMobileTab = "own";
   setRoute("guide");
   render();
 }
@@ -346,6 +349,7 @@ function showOwn() {
   }
   mode = "own";
   viewUserId = currentUserId;
+  activeMobileTab = "own";
   setRoute("own");
   render();
 }
@@ -357,6 +361,7 @@ function showProfile(userId) {
   }
   mode = userId === currentUserId ? "own" : "profile";
   viewUserId = userId;
+  activeMobileTab = userId === currentUserId ? "own" : "partner";
   setRoute(userId === currentUserId ? "own" : "partner");
   render();
 }
@@ -368,6 +373,7 @@ function showCalendar() {
   }
   mode = "calendar";
   viewUserId = currentUserId;
+  activeMobileTab = "calendar";
   setRoute("calendar");
   render();
 }
@@ -385,18 +391,23 @@ function applyRouteFromHash(shouldRender = true) {
   if (!currentUserId) {
     mode = "guide";
     viewUserId = null;
+    activeMobileTab = "own";
   } else if (route === "calendar") {
     mode = "calendar";
     viewUserId = currentUserId;
+    activeMobileTab = "calendar";
   } else if (route === "partner") {
     mode = "profile";
     viewUserId = otherUser(currentUserId).id;
+    activeMobileTab = "partner";
   } else if (route === "guide") {
     mode = "guide";
     viewUserId = null;
+    activeMobileTab = "own";
   } else {
     mode = "own";
     viewUserId = currentUserId;
+    activeMobileTab = "own";
   }
   if (shouldRender) render();
 }
@@ -449,7 +460,8 @@ function renderLeftNav() {
     const active =
       (key === "own" && mode === "own") ||
       (key === "partner" && mode === "profile" && viewed.id !== currentUserId) ||
-      (key === "calendar" && mode === "calendar");
+      (key === "calendar" && mode === "calendar") ||
+      (key === "messages" && activeMobileTab === "messages");
     button.classList.toggle("active", active);
   });
 }
@@ -1075,6 +1087,8 @@ document.addEventListener("click", event => {
     if (target === "calendar") showCalendar();
     if (target === "messages") {
       if (mode === "calendar") showOwn();
+      activeMobileTab = "messages";
+      renderLeftNav();
       window.setTimeout(() => timelineFeed?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
     }
     return;

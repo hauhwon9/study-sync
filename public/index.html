@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#93c5fd" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="学习窝" />
@@ -148,6 +148,25 @@
           <div class="task-list partner-list" id="partnerTaskList"></div>
         </section>
       </section>
+
+      <nav class="mobile-tabbar app-view" aria-label="手机底部导航" hidden>
+        <button class="mobile-tab active" data-left-nav="own" type="button">
+          <span aria-hidden="true">⌂</span>
+          <strong>主页</strong>
+        </button>
+        <button class="mobile-tab" data-left-nav="partner" type="button">
+          <span aria-hidden="true">♡</span>
+          <strong>对方</strong>
+        </button>
+        <button class="mobile-tab" data-left-nav="calendar" type="button">
+          <span aria-hidden="true">□</span>
+          <strong>DDL</strong>
+        </button>
+        <button class="mobile-tab" data-left-nav="messages" type="button">
+          <span aria-hidden="true">✎</span>
+          <strong>动态</strong>
+        </button>
+      </nav>
     </main>
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
     <div class="hover-card" id="hoverCard" hidden></div>
