@@ -2532,26 +2532,27 @@ dialog::backdrop {
 
   .dashboard {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
-    margin-bottom: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    margin-bottom: 7px;
   }
 
   .metric {
-    min-height: 76px;
-    padding: 10px;
+    min-height: 64px;
+    padding: 8px 7px;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(23, 32, 51, 0.07);
   }
 
   .metric strong {
-    margin-top: 6px;
-    font-size: 24px;
+    margin-top: 5px;
+    font-size: 21px;
   }
 
   .metric span {
-    font-size: 11px;
+    font-size: 10px;
     line-height: 1.2;
+    overflow-wrap: anywhere;
   }
 
   .workspace,
@@ -2685,17 +2686,17 @@ dialog::backdrop {
   }
 
   .dashboard {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .metric {
-    min-height: 66px;
-    padding: 9px 10px;
+    min-height: 60px;
+    padding: 8px 6px;
   }
 
   .metric strong {
-    font-size: 22px;
+    font-size: 19px;
   }
 
   .task-filter {
@@ -2706,14 +2707,9 @@ dialog::backdrop {
     padding: 13px;
   }
 
-  .task-title,
-  .progress-row,
-  .task-message {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
   .task-title {
+    align-items: flex-start;
+    flex-direction: row;
     gap: 8px;
   }
 
@@ -2722,8 +2718,31 @@ dialog::backdrop {
   }
 
   .task-title .icon-btn {
-    width: 100%;
-    height: 36px;
+    width: 30px;
+    min-height: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    border-radius: 8px;
+    font-size: 13px;
+    opacity: 0.72;
+  }
+
+  .task-card.unfinished .task-title {
+    padding-right: 70px;
+  }
+
+  .progress-row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .progress-row .avatar {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+    font-size: 12px;
   }
 
   .task-meta {
@@ -2737,13 +2756,32 @@ dialog::backdrop {
   }
 
   .stepper {
-    width: 100%;
-    grid-template-columns: 1fr 52px 1fr;
+    width: auto;
+    grid-template-columns: 30px 34px 30px;
+    justify-self: end;
+    gap: 3px;
+  }
+
+  .stepper button {
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+    border-radius: 8px;
+  }
+
+  .stepper output {
+    font-size: 13px;
   }
 
   .task-actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .task-actions .ghost-btn {
+    min-height: 34px;
+    font-size: 12px;
   }
 
   .task-actions .delete-task {
