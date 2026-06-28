@@ -173,7 +173,8 @@ function taskStatus(task) {
   if (task.status === "archived") return "archived";
   const percent = taskCompletion(task);
   if (percent === 100) return "completed";
-  return taskValue(task) > 0 ? "inProgress" : "unfinished";
+  if (task.dueDate && task.dueDate < dateKey(new Date())) return "unfinished";
+  return "inProgress";
 }
 
 function allProgressFor(userId) {
